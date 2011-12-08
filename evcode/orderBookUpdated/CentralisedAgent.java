@@ -55,9 +55,8 @@ public class CentralisedAgent extends Agent
 							BuySideMatch buyOrderMatch = new BuySideMatch();
 							buyOrderMatch.setBQ(buySideOrder);
 							buyOrderMatch.setSQ(sellSideOrder);
-							System.out.println(buySideOrder);
 							System.out.println("bid size " +  buySideOrder.size());
-							buyOrderMatch.matchOrder();
+							System.out.println(buyOrderMatch.matchOrder().size());
 							/*ACLMessage reply = receiMsg.createReply();
 							Action action = new Action(receiMsg.getSender(),newOrder);
 							reply.setPerformative(ACLMessage.INFORM);
@@ -68,8 +67,7 @@ public class CentralisedAgent extends Agent
 							//System.out.println(reply);
 						}
 						
-					
-						else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
+						/*else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
 						{
 							//System.out.println(newOrder);
 							sellSideOrder.add(newOrder);
@@ -80,17 +78,17 @@ public class CentralisedAgent extends Agent
 							System.out.println("ask size " + sellSideOrder.size());
 							sellOrderMatch.matchOrder();
 							
-							/*ACLMessage reply = receiMsg.createReply();
+							ACLMessage reply = receiMsg.createReply();
 							Action action = new Action(receiMsg.getSender(),newOrder);
 							reply.setPerformative(ACLMessage.INFORM);
 							reply.setContent("Sell order is received ");
 							reply.setOntology(ontology.getName());
 							reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 							myAgent.getContentManager().fillContent(reply, action);
-							myAgent.send(reply);*/
+							myAgent.send(reply);
 
 							//System.out.println(reply);
-						}
+						}*/
 						
 					}
 					
