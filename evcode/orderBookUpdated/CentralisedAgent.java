@@ -1,4 +1,4 @@
-package orderBookUpdated12;
+package orderBookUpdated15;
 
 import java.util.*;
 
@@ -31,7 +31,7 @@ public class CentralisedAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated11 " + getAID().getName());
+		System.out.println("This is updated15 " + getAID().getName());
 		
 		addBehaviour(new CyclicBehaviour(){
 			public void action()
@@ -50,55 +50,51 @@ public class CentralisedAgent extends Agent
 						
 						if(OrderSide.getSide(newOrder).equals(OrderSide.BUY))
 						{
-							// System.out.println(newOrder);
-							// buySideOrder.add(newOrder);
-							// BuySideMatch buyOrderMatch = new BuySideMatch();
-							// buyOrderMatch.setBQ(buySideOrder);
-							// buyOrderMatch.setSQ(sellSideOrder);
-							 //System.out.println(buySideOrder);
-							 //System.out.println("bid size " +  buySideOrder.size());
-							 //buyOrderMatch.matchOrder();
-							 ACLMessage reply = receiMsg.createReply();
-							 Action action = new Action(receiMsg.getSender(),newOrder);
-							 reply.setPerformative(ACLMessage.INFORM);
-							 reply.setContent("Buy order is received");
-							 reply.setOntology(ontology.getName());
-							 reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-							 myAgent.getContentManager().fillContent(reply, action);
-							 myAgent.send(reply);
-							// System.out.println(reply);
-							 //System.out.println("0" + receiMsg);
+							//System.out.println(newOrder);
+							buySideOrder.add(newOrder);
+							BuySideMatch buyOrderMatch = new BuySideMatch();
+							buyOrderMatch.setBQ(buySideOrder);
+							buyOrderMatch.setSQ(sellSideOrder);
+							System.out.println(buySideOrder);
+							System.out.println("bid size " +  buySideOrder.size());
+							buyOrderMatch.matchOrder();
+							/*ACLMessage reply = receiMsg.createReply();
+							Action action = new Action(receiMsg.getSender(),newOrder);
+							reply.setPerformative(ACLMessage.INFORM);
+							reply.setOntology(ontology.getName());
+							reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							myAgent.getContentManager().fillContent(reply, action);
+							myAgent.send(reply);*/
+							//System.out.println(reply);
 						}
 						
 					
 						else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
 						{
+							//System.out.println(newOrder);
+							sellSideOrder.add(newOrder);
+							SellSideMatch sellOrderMatch = new SellSideMatch();
+							sellOrderMatch.setBQ(buySideOrder);
+							sellOrderMatch.setSQ(sellSideOrder);
+							System.out.println(sellSideOrder);
+							System.out.println("ask size " + sellSideOrder.size());
+							sellOrderMatch.matchOrder();
 							
-							 //System.out.println(newOrder);
-								//sellSideOrder.add(newOrder);
-								//SellSideMatch sellOrderMatch = new SellSideMatch();
-								//sellOrderMatch.setBQ(buySideOrder);
-								//sellOrderMatch.setSQ(sellSideOrder);
-								//System.out.println(sellSideOrder);
-								//System.out.println("ask size " + sellSideOrder.size());
-								//sellOrderMatch.matchOrder();
-							 ACLMessage reply = receiMsg.createReply();
-							 Action action = new Action(receiMsg.getSender(),newOrder);
-							 reply.setPerformative(ACLMessage.INFORM);
-							 reply.setContent("Sell order is received ");
-							 reply.setOntology(ontology.getName());
-							 reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-							 myAgent.getContentManager().fillContent(reply, action);
-							 myAgent.send(reply);
-							 //System.out.println(reply);
-							// System.out.println("1" + receiMsg);
+							/*ACLMessage reply = receiMsg.createReply();
+							Action action = new Action(receiMsg.getSender(),newOrder);
+							reply.setPerformative(ACLMessage.INFORM);
+							reply.setContent("Sell order is received ");
+							reply.setOntology(ontology.getName());
+							reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							myAgent.getContentManager().fillContent(reply, action);
+							myAgent.send(reply);*/
+
+							//System.out.println(reply);
 						}
 						
 					}
 					
 				}
-				 
-				
 				catch(CodecException ce)
 				{
 					ce.printStackTrace();
@@ -107,17 +103,6 @@ public class CentralisedAgent extends Agent
 				{
 					oe.printStackTrace();
 				}
-			/*	System.out.println("2" + receiMsg);
-				receiMsg.setContent(null);
-				System.out.println("3" + receiMsg);
-				if(receiMsg == null)
-				{
-					System.out.println("yes");
-				}
-				else
-				{
-					System.out.println("no");
-				}*/
 			}
 		});
 	}

@@ -1,8 +1,8 @@
-package orderBookUpdated12;
+package orderBookUpdated15;
 
 public enum OrderSide {
 	
-	BUY("1"),SELL("2");
+	UNKNOWN_SIDE("0"), BUY("1"), SELL("2"), CANCEL("3");
 	
 	public final String value;
 	
@@ -13,22 +13,33 @@ public enum OrderSide {
 	
 	public static OrderSide getSide(final Order newOrder)
 	{
-		if(Integer.parseInt(BUY.value) == newOrder.getSide())
+		if(newOrder.getSide() == Integer.parseInt(BUY.value))
 		{
 			return BUY;
 		}
-		else
-			return SELL;
-	}
-	
-	public static OrderSide transSide(int i)
-	{
-		if(i == 1)
+		else if(newOrder.getSide() == Integer.parseInt(SELL.value))
 		{
-			return BUY;
+			return SELL;
+		}
+		else if(newOrder.getSide() == Integer.parseInt(CANCEL.value)) 
+		{
+			return CANCEL;
 		}
 		else
-			return SELL;
+			return UNKNOWN_SIDE;	
 	}
-
 }
+
+/*public static OrderSide transSide(int i)
+{
+	if(i == 1)
+	{
+		return BUY;
+	}
+	else if(i == 2)
+	{
+		return SELL;
+	}
+	else
+		return CANCEL;
+}*/

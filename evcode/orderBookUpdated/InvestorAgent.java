@@ -1,4 +1,4 @@
-package orderBookUpdated13;
+package orderBookUpdated15;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -35,136 +35,109 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated13" + getAID().getName());
-		
+		System.out.println("This is updated15 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
-		//pb.addSubBehaviour
-		addBehaviour(new TickerBehaviour(this, 5000){
-			
-			protected void onTick()
-			{
-				int randomVolume = (int)(10+Math.random()*90);
-				int randomSide = (int)(1+Math.random()*2);
-				int randomTime = (int)(1000 + Math.random()*4000);
-				int randomType = (int)(1+Math.random()*2);
-				int randomPrice = (int)(50+Math.random()*5);
-				
-			    Order newOrder = new Order();
-				try
-				{
-					newOrder.setType(randomType);
-					
-					if(newOrder.getType() == 1)
-					{
-						newOrder.setOrderID(id++);
-						newOrder.setSymbol("GOOGLE");
-						newOrder.setSide(randomSide);
-						newOrder.setVolume(randomVolume);
-						newOrder.setOpenTime(System.nanoTime());
-					}
-					else if(newOrder.getType() == 2)
-					{
-						newOrder.setOrderID(id++);
-						newOrder.setSymbol("GOOGLE");
-						newOrder.setSide(randomSide);
-						newOrder.setVolume(randomVolume);
-						newOrder.setPrice(randomPrice);
-						newOrder.setOpenTime(System.nanoTime());
-						//loList.add(newOrder);
-					}
-					
-					
-					Action act = new Action(CentralisedAgent, newOrder);
-					ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
-					
-					msg.addReceiver(CentralisedAgent);
-					msg.setOntology(ontology.getName());
-					msg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-					myAgent.getContentManager().fillContent(msg, act);
-					
-					//System.out.println(msg);
-					myAgent.send(msg);	
-					//myAgent.addBehaviour(new RequestPerformer());
-					reset(randomTime);
-				}
-				catch(Exception ex)
-				{
-						System.out.println(ex);
-				}
-				//addBehaviour(new MessageManager());
-			}
-		});
-	       addBehaviour(new CyclicBehaviour(){
-	    	   public void action()
-	   		{
-	   			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
-	   			ACLMessage receiMsgFromEx = blockingReceive(mt);
-	   			
-	   			try
-	   			{
-	   				ContentElement ce = null;
-	   				if(receiMsgFromEx.getPerformative() == ACLMessage.INFORM)
-	   				{
-	   					ce = getContentManager().extractContent(receiMsgFromEx);	
-	   					Action act = (Action) ce;
-	   					Order replyOrder = (Order) act.getAction();
-	   					System.out.println("Received !!!!!" + replyOrder);
-	   				}
-	   			}
-	   			
-	   			catch(CodecException ce)
-	   			{
-	   				ce.printStackTrace();
-	   			}
-	   			catch(OntologyException oe)
-	   			{
-	   				oe.printStackTrace();
-	   			}
-	   			catch(Exception e)
-	   			{
-	   				System.out.println(e);
-	   			}
-	   	}
-	 });
+		//pb.addSubBehaviour();
+		addBehaviour(new RandomGenerator(this, 5000));
+		addBehaviour(new MessageManager());
+	       
            
 	 }
-	/*private class MessageManager extends Behaviour{
+	
+	private class RandomGenerator extends TickerBehaviour
+	{	
+		public RandomGenerator(Agent a, long period) 
+		{
+			super(a, period);
+			
+		}
+
+		protected void onTick()
+		{
+			int randomVolume = (int)(10+Math.random()*90);
+			int randomSide = (int)(1+Math.random()*2);
+			int randomTime = (int)(1000 + Math.random()*4000);
+			int randomType = (int)(1+Math.random()*2);
+			int randomPrice = (int)(50+Math.random()*5);
+			
+		    Order newOrder = new Order();
+			try
+			{
+				newOrder.setType(randomType);
+				
+				if(newOrder.getType() == 1)
+				{
+					newOrder.setOrderID(id++);
+					newOrder.setSymbol("GOOGLE");
+					newOrder.setSide(randomSide);
+					newOrder.setVolume(randomVolume);
+					newOrder.setOpenTime(System.nanoTime());
+				}
+				else if(newOrder.getType() == 2)
+				{
+					newOrder.setOrderID(id++);
+					newOrder.setSymbol("GOOGLE");
+					newOrder.setSide(randomSide);
+					newOrder.setVolume(randomVolume);
+					newOrder.setPrice(randomPrice);
+					newOrder.setOpenTime(System.nanoTime());
+					//loList.add(newOrder);
+				}
+				
+				
+				Action act = new Action(CentralisedAgent, newOrder);
+				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
+				
+				msg.addReceiver(CentralisedAgent);
+				msg.setOntology(ontology.getName());
+				msg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+				myAgent.getContentManager().fillContent(msg, act);
+				myAgent.send(msg);	
+				reset(randomTime);
+			}
+			catch(Exception ex)
+			{
+					System.out.println(ex);
+			}
+			
+		}
+	}
+	
+	private class MessageManager extends CyclicBehaviour
+	{
 		public void action()
 		{
 			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
-			ACLMessage receiMsgFromEx = blockingReceive(mt);
-			
-			try
-			{
-				ContentElement ce = null;
-				if(receiMsgFromEx.getPerformative() == ACLMessage.INFORM)
+			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
+			ACLMessage receiMsgFromEx = receive(mt);
+			if(receiMsgFromEx!=null){
+				try
 				{
-					ce = getContentManager().extractContent(receiMsgFromEx);	
-					Action act = (Action) ce;
-					Order replyOrder = (Order) act.getAction();
-					System.out.println("Received !!!!!" + replyOrder);
+					ContentElement ce = null;
+					if(receiMsgFromEx.getPerformative() == ACLMessage.INFORM)
+					{
+						ce = getContentManager().extractContent(receiMsgFromEx);	
+						Action act = (Action) ce;
+						Order replyOrder = (Order) act.getAction();
+						System.out.println("Received !!!!!" + replyOrder + " " + getAID().getName());
+					}
+				}
+				
+				catch(CodecException ce)
+				{
+					ce.printStackTrace();
+				}
+				catch(OntologyException oe)
+				{
+					oe.printStackTrace();
+				}
+				catch(Exception e)
+				{
+					System.out.println(e);
 				}
 			}
-			
-			catch(CodecException ce)
-			{
-				ce.printStackTrace();
-			}
-			catch(OntologyException oe)
-			{
-				oe.printStackTrace();
-			}
-			catch(Exception e)
-			{
-				System.out.println(e);
-			}
-	}
-
-		@Override
-		public boolean done() {
-			// TODO Auto-generated method stub
-			return true;
+			else
+				block();
 		}
-
-}*/
+	}
 }

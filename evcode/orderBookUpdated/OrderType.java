@@ -1,8 +1,8 @@
-package orderBookUpdated12;
+package orderBookUpdated15;
 
-public enum OrderType {
-
-	MARKET("1"),LIMIT("2");
+public enum OrderType 
+{
+	UNKNOWN_TYPE("0"), MARKET("1"), LIMIT("2");
 	
 	public final String value;
 	
@@ -13,21 +13,25 @@ public enum OrderType {
 	
 	public static OrderType getOrderType(final Order newOrder)
 	{
-		if(Integer.parseInt(MARKET.value) == newOrder.getType())
+		if(newOrder.getType() == Integer.parseInt(MARKET.value))
 		{
 			return MARKET;
 		}
-		else
-			return LIMIT;
-	}
-	
-	public static OrderType transType(int i)
-	{
-		if(i == 1)
+		else if(newOrder.getType() == Integer.parseInt(LIMIT.value)) 
 		{
-			return MARKET;
+			return LIMIT;
 		}
 		else
-			return LIMIT;
+			return UNKNOWN_TYPE;	
 	}
 }
+
+/*public static OrderType transType(int i)
+{
+	if(i == 1)
+	{
+		return MARKET;
+	}
+	else
+		return LIMIT;
+}*/
