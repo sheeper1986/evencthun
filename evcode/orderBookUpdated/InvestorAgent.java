@@ -63,13 +63,13 @@ public class InvestorAgent extends Agent
 		    Order newOrder = new Order();
 			try
 			{
-				newOrder.setType(1);
+				newOrder.setType(randomType);
 				
 				if(newOrder.getType() == 1)
 				{
 					newOrder.setOrderID(id++);
 					newOrder.setSymbol("GOOGLE");
-					newOrder.setSide(1);
+					newOrder.setSide(randomSide);
 					newOrder.setVolume(randomVolume);
 					newOrder.setOpenTime(System.nanoTime());
 				}
@@ -77,13 +77,12 @@ public class InvestorAgent extends Agent
 				{
 					newOrder.setOrderID(id++);
 					newOrder.setSymbol("GOOGLE");
-					newOrder.setSide(1);
+					newOrder.setSide(randomSide);
 					newOrder.setVolume(randomVolume);
 					newOrder.setPrice(randomPrice);
 					newOrder.setOpenTime(System.nanoTime());
 					//loList.add(newOrder);
 				}
-				System.out.println(newOrder);
 				
 				
 				Action act = new Action(CentralisedAgent, newOrder);
