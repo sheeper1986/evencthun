@@ -1,4 +1,4 @@
-package orderBookUpdated12;
+package orderBookUpdated13;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -35,7 +35,7 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated11" + getAID().getName());
+		System.out.println("This is updated13" + getAID().getName());
 		
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour
@@ -91,13 +91,44 @@ public class InvestorAgent extends Agent
 				{
 						System.out.println(ex);
 				}
-				addBehaviour(new MessageManager());
+				//addBehaviour(new MessageManager());
 			}
 		});
-	       
+	       addBehaviour(new CyclicBehaviour(){
+	    	   public void action()
+	   		{
+	   			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
+	   			ACLMessage receiMsgFromEx = blockingReceive(mt);
+	   			
+	   			try
+	   			{
+	   				ContentElement ce = null;
+	   				if(receiMsgFromEx.getPerformative() == ACLMessage.INFORM)
+	   				{
+	   					ce = getContentManager().extractContent(receiMsgFromEx);	
+	   					Action act = (Action) ce;
+	   					Order replyOrder = (Order) act.getAction();
+	   					System.out.println("Received !!!!!" + replyOrder);
+	   				}
+	   			}
+	   			
+	   			catch(CodecException ce)
+	   			{
+	   				ce.printStackTrace();
+	   			}
+	   			catch(OntologyException oe)
+	   			{
+	   				oe.printStackTrace();
+	   			}
+	   			catch(Exception e)
+	   			{
+	   				System.out.println(e);
+	   			}
+	   	}
+	 });
            
 	 }
-	private class MessageManager extends Behaviour{
+	/*private class MessageManager extends Behaviour{
 		public void action()
 		{
 			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
@@ -135,5 +166,5 @@ public class InvestorAgent extends Agent
 			return true;
 		}
 
-}
+}*/
 }
