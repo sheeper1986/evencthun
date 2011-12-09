@@ -69,22 +69,22 @@ public class InvestorAgent extends Agent
 				{
 					newOrder.setOrderID(id++);
 					newOrder.setSymbol("GOOGLE");
-					newOrder.setSide(randomSide);
-					newOrder.setVolume(randomVolume);
+					newOrder.setSide(1);
+					newOrder.setVolume(100);
 					newOrder.setOpenTime(System.nanoTime());
 				}
 				else if(newOrder.getType() == 2)
 				{
 					newOrder.setOrderID(id++);
 					newOrder.setSymbol("GOOGLE");
-					newOrder.setSide(randomSide);
-					newOrder.setVolume(randomVolume);
+					newOrder.setSide(2);
+					newOrder.setVolume(10);
 					newOrder.setPrice(randomPrice);
 					newOrder.setOpenTime(System.nanoTime());
 					//loList.add(newOrder);
 				}
 				
-				
+				System.out.println(newOrder);
 				Action act = new Action(CentralisedAgent, newOrder);
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 				
