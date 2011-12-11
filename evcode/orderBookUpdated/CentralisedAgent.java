@@ -76,7 +76,7 @@ public class CentralisedAgent extends Agent
 							//SellSideMatch sellOrderMatch = new SellSideMatch();
 							//sellOrderMatch.setBQ(buySideOrder);
 							//sellOrderMatch.setSQ(sellSideOrder);
-							//System.out.println(sellSideOrder);
+							//System.out.println(sellOrderMatch.matchOrder());
 							//System.out.println("ask size " + sellSideOrder.size());
 							//sellOrderMatch.matchOrder();
 							

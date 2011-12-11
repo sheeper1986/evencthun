@@ -58,7 +58,8 @@ public class InvestorAgent extends Agent
 			int randomSide = (int)(1+Math.random()*2);
 			int randomTime = (int)(1000 + Math.random()*4000);
 			int randomType = (int)(1+Math.random()*2);
-			int randomPrice = (int)(50+Math.random()*5);
+			int randomSellPrice = (int)(50+Math.random()*6);
+			int randomBuyPrice = (int)(45+Math.random()*6);
 			
 		    Order newOrder = new Order();
 			try
@@ -75,16 +76,27 @@ public class InvestorAgent extends Agent
 				}
 				else if(newOrder.getType() == 2)
 				{
-					newOrder.setOrderID(id++);
-					newOrder.setSymbol("GOOGLE");
 					newOrder.setSide(2);
-					newOrder.setVolume(10);
-					newOrder.setPrice(randomPrice);
-					newOrder.setOpenTime(System.nanoTime());
+					if(newOrder.getSide() == 1)
+					{
+						newOrder.setOrderID(id++);
+						newOrder.setSymbol("GOOGLE");
+						newOrder.setVolume(randomVolume);
+						newOrder.setPrice(randomBuyPrice);
+						newOrder.setOpenTime(System.nanoTime());
+					}
+					else if(newOrder.getSide() == 2)
+					{
+						newOrder.setOrderID(id++);
+						newOrder.setSymbol("GOOGLE");
+						newOrder.setVolume(70);
+						newOrder.setPrice(randomSellPrice);
+						newOrder.setOpenTime(System.nanoTime());
+					}	
 					//loList.add(newOrder);
 				}
 				
-				System.out.println(newOrder);
+				System.out.println(newOrder+ "-----");
 				Action act = new Action(CentralisedAgent, newOrder);
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 				

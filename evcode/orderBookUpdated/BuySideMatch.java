@@ -71,6 +71,13 @@ public class BuySideMatch
 			else if(buySideOrder.peek().getVolume() < sellSideOrder.peek().getVolume())
 			{
 				int aVolume = sellSideOrder.peek().getVolume() - buySideOrder.peek().getVolume();
+				int filledVolume = buySideOrder.peek().getVolume();
+				Order filledOrder = new Order();
+				filledOrder.setAll(sellSideOrder.peek());
+				filledOrder.setStatus(2);
+				filledOrder.setVolume(filledVolume);
+				processedOrder.add(filledOrder);
+				
 				sellSideOrder.peek().setVolume(aVolume);
 				//System.out.println("Volume " + buySideOrder.peek().getVolume() + " deal with Price " + sellSideOrder.peek().getPrice());
 				//System.out.println(buySideOrder.poll() + " -----is removed");
@@ -84,28 +91,33 @@ public class BuySideMatch
 			{
 				double sumBuyPrice = 0;
 				int sumBuyVolume = 0;
+				int originalVolume = buySideOrder.peek().getVolume();
+
 				
 				while(buySideOrder.peek().getVolume() > sellSideOrder.peek().getVolume())
 				{
 					int bVolume = buySideOrder.peek().getVolume() - sellSideOrder.peek().getVolume();
 					buySideOrder.peek().setVolume(bVolume);
-					System.out.println(buySideOrder.peek( )+ " ---------");
 					sumBuyPrice += (sellSideOrder.peek().getVolume())*(sellSideOrder.peek().getPrice());
 					sumBuyVolume += sellSideOrder.peek().getVolume();
 					
 					sellSideOrder.peek().setStatus(1);
-					processedOrder.add(sellSideOrder.peek());
-					System.out.println(processedOrder+ "-------");
-					sellSideOrder.poll();
+					processedOrder.add(sellSideOrder.poll());
 					//System.out.println(sellSideOrder.poll() + " -----is removed");
 					if(sellSideOrder.peek() == null)
 					{
 						//System.out.println("No Enough Liquidity, Partly Filled " + sumBuyVolume + " with Price " + (sumBuyPrice/sumBuyVolume));
 						//System.out.println("Rest Of " + buySideOrder.poll() + " -----is Canceled");
+						//Order filledOrder = new Order();
+						//filledOrder.setAll(buySideOrder.peek());
+						//filledOrder.setStatus(3);
+						//filledOrder.setVolume(originalVolume - sumBuyVolume);
+						//processedOrder.add(filledOrder);
+						
 						buySideOrder.peek().setStatus(2);
 						buySideOrder.peek().setVolume(sumBuyVolume);
 						buySideOrder.peek().setDealingPrice(sumBuyPrice/sumBuyVolume);
-						
+	
 						processedOrder.add(buySideOrder.poll());
 						break;
 					}
@@ -114,13 +126,21 @@ public class BuySideMatch
 						if(buySideOrder.peek().getVolume() < sellSideOrder.peek().getVolume())
 						{
 							int cVolume = sellSideOrder.peek().getVolume() - (buySideOrder.peek().getVolume());
+							
+							int filledVolume = buySideOrder.peek().getVolume();
+							Order filledOrder = new Order();
+							filledOrder.setAll(sellSideOrder.peek());
+							filledOrder.setStatus(2);
+							filledOrder.setVolume(filledVolume);
+							processedOrder.add(filledOrder);
+							
 							sellSideOrder.peek().setVolume(cVolume);
 							double allPrice = sumBuyPrice+ (sellSideOrder.peek().getPrice())*(buySideOrder.peek().getVolume());
 							int allVolume = sumBuyVolume + (buySideOrder.peek().getVolume());
 							double averagePrice = (allPrice)/(allVolume);
 							
 							buySideOrder.peek().setStatus(1);
-							buySideOrder.peek().setDealingPrice(allPrice);
+							buySideOrder.peek().setDealingPrice(averagePrice);
 							buySideOrder.peek().setVolume(allVolume);
 							//System.out.println("Volume " + allVolume + " deal with Price " + averagePrice);
 							//System.out.println(buySideOrder.poll() + " -----is removed");
