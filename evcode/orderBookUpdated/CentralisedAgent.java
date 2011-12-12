@@ -55,17 +55,47 @@ public class CentralisedAgent extends Agent
 							BuySideMatch buyOrderMatch = new BuySideMatch();
 							buyOrderMatch.setBQ(buySideOrder);
 							buyOrderMatch.setSQ(sellSideOrder);
-							//System.out.println("bid size " +  buySideOrder.size());
-							System.out.println(buyOrderMatch.matchOrder());
-							//System.out.println(buyOrderMatch.matchOrder().size());
 							
-							/*ACLMessage reply = receiMsg.createReply();
-							Action action = new Action(receiMsg.getSender(),newOrder);
-							reply.setPerformative(ACLMessage.INFORM);
-							reply.setOntology(ontology.getName());
-							reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-							myAgent.getContentManager().fillContent(reply, action);
-							myAgent.send(reply);*/
+							PriorityQueue<Order> tempBuyOrder = new PriorityQueue<Order>();
+							tempBuyOrder.addAll(buyOrderMatch.matchOrder());
+
+							while(tempBuyOrder.peek()!=null)
+							{
+								if(tempBuyOrder.peek().getStatus() == 1)
+								{
+									ACLMessage reply = receiMsg.createReply();
+									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
+									reply.setPerformative(ACLMessage.INFORM);
+									reply.setOntology(ontology.getName());
+									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(reply, action);
+									myAgent.send(reply);
+								}
+								else if(tempBuyOrder.peek().getStatus() == 2)
+								{
+									ACLMessage reply = receiMsg.createReply();
+									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
+									reply.setPerformative(ACLMessage.PROPOSE);
+									reply.setOntology(ontology.getName());
+									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(reply, action);
+									myAgent.send(reply);
+								}
+								else if(tempBuyOrder.peek().getStatus() == 3)
+								{
+									ACLMessage reply = receiMsg.createReply();
+									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
+									reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+									reply.setOntology(ontology.getName());
+									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(reply, action);
+									myAgent.send(reply);
+								}
+							}
+							
+							
+							
+							
 							//System.out.println(reply);
 						}
 						
@@ -73,9 +103,46 @@ public class CentralisedAgent extends Agent
 						{
 							//System.out.println(newOrder);
 							sellSideOrder.add(newOrder);
-							//SellSideMatch sellOrderMatch = new SellSideMatch();
-							//sellOrderMatch.setBQ(buySideOrder);
-							//sellOrderMatch.setSQ(sellSideOrder);
+							SellSideMatch sellOrderMatch = new SellSideMatch();
+							sellOrderMatch.setBQ(buySideOrder);
+							sellOrderMatch.setSQ(sellSideOrder);
+							
+							PriorityQueue<Order> tempSellOrder = new PriorityQueue<Order>();
+							tempSellOrder.addAll(sellOrderMatch.matchOrder());
+							
+							while(tempSellOrder.peek()!=null)
+							{
+								if(tempSellOrder.peek().getStatus() == 1)
+								{
+									ACLMessage reply = receiMsg.createReply();
+									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
+									reply.setPerformative(ACLMessage.INFORM);
+									reply.setOntology(ontology.getName());
+									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(reply, action);
+									myAgent.send(reply);
+								}
+								else if(tempSellOrder.peek().getStatus() == 2)
+								{
+									ACLMessage reply = receiMsg.createReply();
+									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
+									reply.setPerformative(ACLMessage.PROPOSE);
+									reply.setOntology(ontology.getName());
+									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(reply, action);
+									myAgent.send(reply);
+								}
+								else if(tempSellOrder.peek().getStatus() == 3)
+								{
+									ACLMessage reply = receiMsg.createReply();
+									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
+									reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+									reply.setOntology(ontology.getName());
+									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(reply, action);
+									myAgent.send(reply);
+								}
+							}
 							//System.out.println(sellOrderMatch.matchOrder());
 							//System.out.println("ask size " + sellSideOrder.size());
 							//sellOrderMatch.matchOrder();

@@ -70,13 +70,14 @@ public class InvestorAgent extends Agent
 				{
 					newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 					newOrder.setSymbol("GOOGLE");
-					newOrder.setSide(1);
-					newOrder.setVolume(100);
+					newOrder.setSide(randomSide);
+					newOrder.setVolume(randomVolume);
 					newOrder.setOpenTime(System.nanoTime());
 				}
 				else if(newOrder.getType() == 2)
 				{
-					newOrder.setSide(2);
+					newOrder.setSide(randomSide);
+					
 					if(newOrder.getSide() == 1)
 					{
 						newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
@@ -89,7 +90,7 @@ public class InvestorAgent extends Agent
 					{
 						newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
-						newOrder.setVolume(70);
+						newOrder.setVolume(randomVolume);
 						newOrder.setPrice(randomSellPrice);
 						newOrder.setOpenTime(System.nanoTime());
 					}	
@@ -131,7 +132,21 @@ public class InvestorAgent extends Agent
 						ce = getContentManager().extractContent(receiMsgFromEx);	
 						Action act = (Action) ce;
 						Order replyOrder = (Order) act.getAction();
-						System.out.println("Received !!!!!" + replyOrder + " " + getAID().getName());
+						System.out.println("Filled !!!!!" + replyOrder + " " + getAID().getName());
+					}
+					else if(receiMsgFromEx.getPerformative() == ACLMessage.PROPOSE)
+					{
+						ce = getContentManager().extractContent(receiMsgFromEx);	
+						Action act = (Action) ce;
+						Order replyOrder = (Order) act.getAction();
+						System.out.println("Great PartlyFilled!!!!!" + replyOrder + " " + getAID().getName());
+					}
+					else if(receiMsgFromEx.getPerformative() == ACLMessage.REJECT_PROPOSAL)
+					{
+						ce = getContentManager().extractContent(receiMsgFromEx);	
+						Action act = (Action) ce;
+						Order replyOrder = (Order) act.getAction();
+						System.out.println("Rejected !!!!!" + replyOrder + " " + getAID().getName());
 					}
 				}
 				
