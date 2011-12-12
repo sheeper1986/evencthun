@@ -254,10 +254,10 @@ public class Order implements AgentAction,Comparable<Order>
 		{
 			if(this.isMarketOrder())
 			{
-				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this) + "  Volume"+ this.getVolume() + " with DealingPrice " + this.getDealingPrice());
+				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this) + " Volume"+ this.getVolume() + " with DealingPrice " + this.getDealingPrice());
 			}
 			else
-				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this)  + "  Volume"+ this.getVolume()  + " with DealingPrice " + this.getPrice());
+				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this)  + " Volume"+ this.getVolume()  + " with DealingPrice " + this.getPrice());
 		}
 		else if(this.isRejected())
 		{

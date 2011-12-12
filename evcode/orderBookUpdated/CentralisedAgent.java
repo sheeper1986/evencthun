@@ -92,11 +92,6 @@ public class CentralisedAgent extends Agent
 									myAgent.send(reply);
 								}
 							}
-							
-							
-							
-							
-							//System.out.println(reply);
 						}
 						
 						else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
@@ -143,20 +138,6 @@ public class CentralisedAgent extends Agent
 									myAgent.send(reply);
 								}
 							}
-							//System.out.println(sellOrderMatch.matchOrder());
-							//System.out.println("ask size " + sellSideOrder.size());
-							//sellOrderMatch.matchOrder();
-							
-							//ACLMessage reply = receiMsg.createReply();
-							//Action action = new Action(receiMsg.getSender(),newOrder);
-							//reply.setPerformative(ACLMessage.INFORM);
-							//reply.setContent("Sell order is received ");
-							//reply.setOntology(ontology.getName());
-							//reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-							//myAgent.getContentManager().fillContent(reply, action);
-							//myAgent.send(reply);
-
-							//System.out.println(reply);
 						}
 						
 					}
