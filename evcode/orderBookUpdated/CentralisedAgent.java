@@ -1,4 +1,4 @@
-package orderBookUpdated15;
+package orderBookUpdated16;
 
 import java.util.*;
 
@@ -31,7 +31,7 @@ public class CentralisedAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated15 " + getAID().getName());
+		System.out.println("This is updated16 " + getAID().getName());
 		
 		addBehaviour(new CyclicBehaviour(){
 			public void action()
@@ -54,8 +54,7 @@ public class CentralisedAgent extends Agent
 							buySideOrder.add(newOrder);
 							BuySideMatch buyOrderMatch = new BuySideMatch();
 							buyOrderMatch.setBQ(buySideOrder);
-							buyOrderMatch.setSQ(sellSideOrder);
-							
+							buyOrderMatch.setSQ(sellSideOrder);				
 							PriorityQueue<Order> tempBuyOrder = new PriorityQueue<Order>();
 							tempBuyOrder.addAll(buyOrderMatch.matchOrder());
 

@@ -1,4 +1,4 @@
-package orderBookUpdated15;
+package orderBookUpdated16;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -27,7 +27,9 @@ public class InvestorAgent extends Agent
 	private Ontology ontology = OrderBookOntology.getInstance();
 	private Codec codec = new SLCodec();
 	private static int id = 0;
-	private ArrayList<Order> loList = new ArrayList<Order>();
+	private ArrayList<Order> proposedOrder = new ArrayList<Order>();
+	private ArrayList<Order> filledOrder = new ArrayList<Order>();
+	private UpdateInventory ui = new UpdateInventory();
 	
 	protected void setup()
 	{
@@ -35,13 +37,11 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated15 " + getAID().getName());
+		System.out.println("This is updated16 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
 		addBehaviour(new MessageManager());
-	       
-           
 	 }
 	
 	private class RandomGenerator extends TickerBehaviour
@@ -49,7 +49,6 @@ public class InvestorAgent extends Agent
 		public RandomGenerator(Agent a, long period) 
 		{
 			super(a, period);
-			
 		}
 
 		protected void onTick()
@@ -94,10 +93,10 @@ public class InvestorAgent extends Agent
 						newOrder.setPrice(randomSellPrice);
 						newOrder.setOpenTime(System.nanoTime());
 					}	
-					//loList.add(newOrder);
 				}
+				proposedOrder.add(newOrder);
+				System.out.println(proposedOrder);
 				
-				System.out.println(newOrder+ "-----");
 				Action act = new Action(CentralisedAgent, newOrder);
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
 				
@@ -112,7 +111,6 @@ public class InvestorAgent extends Agent
 			{
 					System.out.println(ex);
 			}
-			
 		}
 	}
 	
@@ -133,6 +131,8 @@ public class InvestorAgent extends Agent
 						Action act = (Action) ce;
 						Order replyOrder = (Order) act.getAction();
 						System.out.println("Filled !!!!!" + replyOrder + " " + getAID().getName());
+						filledOrder.add(replyOrder);
+						ui.updateList(proposedOrder, replyOrder);
 					}
 					else if(receiMsgFromEx.getPerformative() == ACLMessage.PROPOSE)
 					{
@@ -140,6 +140,15 @@ public class InvestorAgent extends Agent
 						Action act = (Action) ce;
 						Order replyOrder = (Order) act.getAction();
 						System.out.println("Great PartlyFilled!!!!!" + replyOrder + " " + getAID().getName());
+						if(replyOrder.getType() == 1)
+						{
+							filledOrder.add(replyOrder);
+							ui.updateList(proposedOrder, replyOrder);
+						}
+						else if(replyOrder.getType() == 2)
+						{
+							filledOrder.add(replyOrder);
+						}
 					}
 					else if(receiMsgFromEx.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 					{
@@ -147,7 +156,9 @@ public class InvestorAgent extends Agent
 						Action act = (Action) ce;
 						Order replyOrder = (Order) act.getAction();
 						System.out.println("Rejected !!!!!" + replyOrder + " " + getAID().getName());
+						ui.updateList(proposedOrder, replyOrder);
 					}
+					System.out.println("Stock Inventory " + filledOrder);
 				}
 				
 				catch(CodecException ce)
