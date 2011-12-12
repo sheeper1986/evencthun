@@ -53,6 +53,7 @@ public class SellSideMatch
 			{
 				sellSideOrder.peek().setStatus(1);
 				buySideOrder.peek().setStatus(1);
+				
                 sellSideOrder.peek().setDealingPrice(buySideOrder.peek().getPrice());
 				
 				processedOrder.add(sellSideOrder.poll());
@@ -63,9 +64,16 @@ public class SellSideMatch
 			else if(sellSideOrder.peek().getVolume() < buySideOrder.peek().getVolume())
 			{
 				int aVolume = buySideOrder.peek().getVolume() - sellSideOrder.peek().getVolume();
+				
+				int filledVolume = sellSideOrder.peek().getVolume();
+				Order filledOrder = new Order();
+				filledOrder.setAll(buySideOrder.peek());
+				filledOrder.setStatus(2);
+				filledOrder.setVolume(filledVolume);
+				processedOrder.add(filledOrder);
+				
 				buySideOrder.peek().setVolume(aVolume);
-				//System.out.println("Volume " + buySideOrder.peek().getVolume() + " deal with Price " + sellSideOrder.peek().getPrice());
-				//System.out.println(buySideOrder.poll() + " -----is removed");
+				 
 				sellSideOrder.peek().setStatus(1);
 				sellSideOrder.peek().setDealingPrice(buySideOrder.peek().getPrice());
 				processedOrder.add(sellSideOrder.poll());
@@ -89,13 +97,11 @@ public class SellSideMatch
 					
 					if(buySideOrder.peek() == null)
 					{
-
 						sellSideOrder.peek().setStatus(2);
 						sellSideOrder.peek().setVolume(sumSellVolume);
 						sellSideOrder.peek().setDealingPrice(sumSellPrice/sumSellVolume);
-						
-
 						processedOrder.add(sellSideOrder.poll());
+						
 						break;
 					}
 					else
@@ -103,7 +109,16 @@ public class SellSideMatch
 						if(sellSideOrder.peek().getVolume() < buySideOrder.peek().getVolume())
 						{
 							int cVolume = buySideOrder.peek().getVolume() - (sellSideOrder.peek().getVolume());
+							
+							int filledVolume = sellSideOrder.peek().getVolume();
+							Order filledOrder = new Order();
+							filledOrder.setAll(buySideOrder.peek());
+							filledOrder.setStatus(2);
+							filledOrder.setVolume(filledVolume);
+				            processedOrder.add(filledOrder);
+							
 							buySideOrder.peek().setVolume(cVolume);
+							
 							double allPrice = sumSellPrice+ (buySideOrder.peek().getPrice())*(sellSideOrder.peek().getVolume());
 							int allVolume = sumSellVolume + (sellSideOrder.peek().getVolume());
 							double averagePrice = (allPrice)/(allVolume);
@@ -111,9 +126,8 @@ public class SellSideMatch
 							sellSideOrder.peek().setStatus(1);
 							sellSideOrder.peek().setDealingPrice(averagePrice);
 							sellSideOrder.peek().setVolume(allVolume);
-							//System.out.println("Volume " + allVolume + " deal with Price " + averagePrice);
-							//System.out.println(buySideOrder.poll() + " -----is removed");
 							processedOrder.add(sellSideOrder.poll());
+							
 							break;
 						}
 						else if(sellSideOrder.peek().getVolume() == buySideOrder.peek().getVolume())
@@ -129,6 +143,7 @@ public class SellSideMatch
 
 							processedOrder.add(sellSideOrder.poll());
 							processedOrder.add(buySideOrder.poll());
+							
 							break;
 						}
 						else
@@ -155,12 +170,19 @@ public class SellSideMatch
 				else if(sellSideOrder.peek().getVolume() < buySideOrder.peek().getVolume())
 				{
 					 int aVolume = buySideOrder.peek().getVolume() - sellSideOrder.peek().getVolume();
+					 
+					 int filledVolume = sellSideOrder.peek().getVolume();
+					 Order filledOrder = new Order();
+					 filledOrder.setAll(buySideOrder.peek());
+				     filledOrder.setStatus(2);
+					 filledOrder.setVolume(filledVolume);
+					 processedOrder.add(filledOrder);
+					 
 					 buySideOrder.peek().setVolume(aVolume);
 					 
 					 sellSideOrder.peek().setStatus(1);
 					 processedOrder.add(sellSideOrder.poll());
-					 //System.out.println("Volume " + buySideOrder.peek().getVolume() + " deal with Price " + sellSideOrder.peek().getPrice());
-				     //System.out.println(buySideOrder.poll() + " -----is removed"); 
+					
 					 return processedOrder;
 				}
 				else
@@ -172,7 +194,6 @@ public class SellSideMatch
 				    	 int bVolume = sellSideOrder.peek().getVolume() - buySideOrder.peek().getVolume();
 					     sellSideOrder.peek().setVolume(bVolume);
 								
-					     //limitPrice  = buySideOrder.peek().getPrice();
 						 sumSellVolume += buySideOrder.peek().getVolume();
 								
 					     buySideOrder.peek().setStatus(1);
@@ -194,8 +215,18 @@ public class SellSideMatch
 								if(sellSideOrder.peek().getVolume() < buySideOrder.peek().getVolume())
 								{
 									 int cVolume = buySideOrder.peek().getVolume() - (sellSideOrder.peek().getVolume());
+									 
+									 int filledVolume = sellSideOrder.peek().getVolume();
+									 Order filledOrder = new Order();
+									 filledOrder.setAll(buySideOrder.peek());
+									 filledOrder.setStatus(2);
+									 filledOrder.setVolume(filledVolume);
+									 processedOrder.add(filledOrder);
+									 
 									 buySideOrder.peek().setVolume(cVolume);
+									 
 									 int allVolume = sumSellVolume + (sellSideOrder.peek().getVolume());
+									 
 									 sellSideOrder.peek().setStatus(1);
 									 sellSideOrder.peek().setVolume(allVolume);
 									 processedOrder.add(sellSideOrder.poll());
@@ -205,13 +236,16 @@ public class SellSideMatch
 									 else if(sellSideOrder.peek().getVolume() == buySideOrder.peek().getVolume())
 									{
 										 int allVolume = sumSellVolume + (sellSideOrder.peek().getVolume());
+										 
 										 sellSideOrder.peek().setStatus(1);
 										 buySideOrder.peek().setStatus(1);
+										 
 										 sellSideOrder.peek().setVolume(allVolume);
+										 
 										 processedOrder.add(sellSideOrder.poll());
 										 processedOrder.add(buySideOrder.poll());
+										 
 										 break;
-											
 									}
 									 else
 										 continue;
@@ -225,7 +259,7 @@ public class SellSideMatch
 				 {
 					 return processedOrder;
 				 }
-			}
+			 }
 			else
 			 {
 				 return processedOrder;

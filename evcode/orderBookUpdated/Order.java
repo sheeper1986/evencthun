@@ -4,10 +4,11 @@ import jade.content.AgentAction;
 
 public class Order implements AgentAction,Comparable<Order>
 {
-	private int orderID, type, side, volume, status;
+	private int type, side, volume, status;
 	private String symbol;
 	private double price, dealingPrice;
 	private Long openTime;
+	private String orderID;
 	
 	//Constructor
 	public Order()
@@ -15,14 +16,14 @@ public class Order implements AgentAction,Comparable<Order>
 		
 	}
 	
-	public Order(int orderID, String symbol, int volume)
+	public Order(String orderID, String symbol, int volume)
 	{
 		this.orderID = orderID;
 		this.symbol = symbol;
 		this.volume = volume;
 	}
 	
-	public Order(int orderID, String symbol, int volume, Long openTime )
+	public Order(String orderID, String symbol, int volume, Long openTime )
 	{
 		this.orderID = orderID;
 		this.symbol = symbol;
@@ -30,7 +31,7 @@ public class Order implements AgentAction,Comparable<Order>
 		this.openTime = openTime;
 	}
 	
-	public Order(int orderID, String symbol, int volume, double price)
+	public Order(String orderID, String symbol, int volume, double price)
 	{
 		this.orderID = orderID;
 		this.symbol = symbol;
@@ -38,7 +39,7 @@ public class Order implements AgentAction,Comparable<Order>
 		this.price = price;
 	}
 	
-	public Order(int orderID, String symbol, int volume, double price, Long openTime)
+	public Order(String orderID, String symbol, int volume, double price, Long openTime)
 	{
 		this.orderID = orderID;
 		this.symbol = symbol;
@@ -47,7 +48,7 @@ public class Order implements AgentAction,Comparable<Order>
 		this.openTime = openTime;
 	}
 	
-	public Order(int orderID, String symbol, int volume, double price, Long openTime, int status)
+	public Order(String orderID, String symbol, int volume, double price, Long openTime, int status)
 	{
 		this.orderID = orderID;
 		this.symbol = symbol;
@@ -57,7 +58,7 @@ public class Order implements AgentAction,Comparable<Order>
 		this.status = status;
 	}
 	
-	public Order(int orderID, String symbol, int volume, double price, double dealingPrice, Long openTime, int status)
+	public Order(String orderID, String symbol, int volume, double price, double dealingPrice, Long openTime, int status)
 	{
 		this.orderID = orderID;
 		this.symbol = symbol;
@@ -79,11 +80,11 @@ public class Order implements AgentAction,Comparable<Order>
 	}
 	
 	//Set,Get orderID
-	public void setOrderID(int orderID)
+	public void setOrderID(String orderID)
 	{
 		this.orderID = orderID;
 	}
-	public int getOrderID()
+	public String getOrderID()
 	{
 		return orderID;
 	}
@@ -244,26 +245,26 @@ public class Order implements AgentAction,Comparable<Order>
 		{
 			if(this.isMarketOrder())
 			{
-				return (OrderSide.getSide(this).toString() + " OrderID" + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume());
+				return (OrderSide.getSide(this).toString() + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume());
 			}
 			else
-				return (OrderSide.getSide(this).toString() + " OrderID" + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume() + " with Price" + this.getPrice());
+				return (OrderSide.getSide(this).toString() + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume() + " with Price" + this.getPrice());
 		}
 		else if(this.isFilled()||this.isPartiallyFilled())
 		{
 			if(this.isMarketOrder())
 			{
-				return (OrderSide.getSide(this).toString()  + " OrderID" + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this) + "  Volume"+ this.getVolume() + " with DealingPrice " + this.getDealingPrice());
+				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this) + "  Volume"+ this.getVolume() + " with DealingPrice " + this.getDealingPrice());
 			}
 			else
-				return (OrderSide.getSide(this).toString()  + " OrderID" + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this)  + "  Volume"+ this.getVolume()  + " with DealingPrice " + this.getPrice());
+				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " " + OrderStatus.getOrderStatus(this)  + "  Volume"+ this.getVolume()  + " with DealingPrice " + this.getPrice());
 		}
 		else if(this.isRejected())
 		{
-			return (OrderSide.getSide(this).toString()  + " OrderID" + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume() + " " + OrderStatus.getOrderStatus(this));
+			return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume() + " " + OrderStatus.getOrderStatus(this));
 		}
 		else
-			return ("OrderID" + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume() + " " + OrderStatus.getOrderStatus(this));
+			return ("OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume"+ this.getVolume() + " " + OrderStatus.getOrderStatus(this));
 			
 	}
 	

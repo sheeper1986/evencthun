@@ -68,7 +68,7 @@ public class InvestorAgent extends Agent
 				
 				if(newOrder.getType() == 1)
 				{
-					newOrder.setOrderID(id++);
+					newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 					newOrder.setSymbol("GOOGLE");
 					newOrder.setSide(1);
 					newOrder.setVolume(100);
@@ -79,7 +79,7 @@ public class InvestorAgent extends Agent
 					newOrder.setSide(2);
 					if(newOrder.getSide() == 1)
 					{
-						newOrder.setOrderID(id++);
+						newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
 						newOrder.setVolume(randomVolume);
 						newOrder.setPrice(randomBuyPrice);
@@ -87,7 +87,7 @@ public class InvestorAgent extends Agent
 					}
 					else if(newOrder.getSide() == 2)
 					{
-						newOrder.setOrderID(id++);
+						newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
 						newOrder.setVolume(70);
 						newOrder.setPrice(randomSellPrice);

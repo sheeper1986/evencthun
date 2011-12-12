@@ -42,7 +42,7 @@ public class OrderBookOntology extends Ontology
 		add(new AgentActionSchema(ORDER), Order.class);
 		
 		AgentActionSchema aas = (AgentActionSchema)getSchema(ORDER);
-		aas.add(ORDER_ID, (PrimitiveSchema)getSchema(BasicOntology.INTEGER),ObjectSchema.MANDATORY);
+		aas.add(ORDER_ID, (PrimitiveSchema)getSchema(BasicOntology.STRING),ObjectSchema.MANDATORY);
 		aas.add(ORDER_TYPE, (PrimitiveSchema)getSchema(BasicOntology.INTEGER));
 		aas.add(ORDER_SIDE, (PrimitiveSchema)getSchema(BasicOntology.INTEGER));
 		aas.add(ORDER_SYMBOL, (PrimitiveSchema)getSchema(BasicOntology.STRING));
