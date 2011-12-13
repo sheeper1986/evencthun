@@ -1,4 +1,4 @@
-package orderBookUpdated16;
+package orderBookUpdated17;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -37,11 +37,12 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated16 " + getAID().getName());
+		System.out.println("This is updated17 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
 		addBehaviour(new MessageManager());
+		addBehaviour(new StockOperation(this, 3000));
 	 }
 	
 	private class RandomGenerator extends TickerBehaviour
@@ -208,6 +209,28 @@ public class InvestorAgent extends Agent
 			}
 			else
 				block();
+		}
+	}
+	private class StockOperation extends TickerBehaviour
+	{
+
+		public StockOperation(Agent a, long period) 
+		{
+			super(a, period);
+		}
+		protected void onTick()
+		{
+			try
+			{
+				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.CFP);
+				checkPriceMsg.addReceiver(CentralisedAgent);
+				checkPriceMsg.setContent("Checking Current Price");
+				myAgent.send(checkPriceMsg);	
+			}
+			catch(Exception ex)
+			{
+					System.out.println(ex);
+			}
 		}
 	}
 }

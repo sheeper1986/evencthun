@@ -1,4 +1,4 @@
-package orderBookUpdated16;
+package orderBookUpdated17;
 
 import java.util.*;
 
@@ -31,13 +31,15 @@ public class CentralisedAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated16 " + getAID().getName());
+		System.out.println("This is updated17 " + getAID().getName());
 		
 		addBehaviour(new CyclicBehaviour(){
 			public void action()
 			{
+				MessageTemplate pt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
 				MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
 				ACLMessage receiMsg = blockingReceive(mt);
+				ACLMessage priceMsg = blockingReceive(pt);
 				
 				try
 				{
@@ -139,6 +141,10 @@ public class CentralisedAgent extends Agent
 							}
 						}
 						
+					}
+					if(priceMsg.getPerformative() == ACLMessage.CFP)
+					{
+						System.out.println("received!!!!!!!!!!!!!!!!!!!! " + priceMsg.getContent());
 					}
 					
 				}

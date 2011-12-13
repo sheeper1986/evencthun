@@ -1,4 +1,4 @@
-package orderBookUpdated16;
+package orderBookUpdated17;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -51,6 +51,26 @@ public class UpdateInventory {
 				it.remove();
 			}
 		}
+	}
+	
+	public ArrayList<Order> matchedOrders(ArrayList<Order> alo, double price)
+	{
+		ArrayList<Order> temp = new ArrayList<Order>();
+		int i = 0;
+		
+		while(i < alo.size())
+		{
+			if(Math.abs((alo.get(i).getPrice() - price)) > 4)
+			{
+					temp.add(alo.get(i));
+			}
+				i++;
+		}
+		if(temp.size() == 0)
+		{
+			return null;
+		}
+		return temp;
 	}
 	
 	/*public void updateListLimit(ArrayList<Order> proposedOrder, Order order)
