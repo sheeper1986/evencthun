@@ -1,4 +1,4 @@
-package orderBookUpdated17;
+package orderBookUpdated18;
 
 import java.util.*;
 
@@ -25,143 +25,159 @@ public class CentralisedAgent extends Agent
 	private PriorityQueue<Order> sellSideOrder = new PriorityQueue<Order>();
 	private Codec codec = new SLCodec();
 	private Ontology ontology = OrderBookOntology.getInstance();
-	private static double currentPrice ;
+	private static double currentPrice;
 	protected void setup()
 	{
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated17 " + getAID().getName());
+		System.out.println("This is updated18 " + getAID().getName());
 		
-		addBehaviour(new CyclicBehaviour(){
-			public void action()
+		addBehaviour(new OrderManageSystem());
+		addBehaviour(new PriceResponder());
+	}
+	
+	private class OrderManageSystem extends CyclicBehaviour
+	{
+		public void action()
+		{
+			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
+			ACLMessage receiMsg = blockingReceive(mt);
+			try
 			{
-				MessageTemplate pt = MessageTemplate.MatchPerformative(ACLMessage.CFP);
-				MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
-				ACLMessage receiMsg = blockingReceive(mt);
-				ACLMessage priceMsg = blockingReceive(pt);
-				
-				try
+				ContentElement ce = null;
+				if(receiMsg.getPerformative() == ACLMessage.REQUEST)
 				{
-					ContentElement ce = null;
-					if(receiMsg.getPerformative() == ACLMessage.REQUEST)
+					ce = getContentManager().extractContent(receiMsg);	
+					Action act = (Action) ce;
+					Order newOrder = (Order) act.getAction();
+					
+					if(OrderSide.getSide(newOrder).equals(OrderSide.BUY))
 					{
-						ce = getContentManager().extractContent(receiMsg);	
-						Action act = (Action) ce;
-						Order newOrder = (Order) act.getAction();
-						
-						if(OrderSide.getSide(newOrder).equals(OrderSide.BUY))
-						{
-							//System.out.println(newOrder);
-							buySideOrder.add(newOrder);
-							BuySideMatch buyOrderMatch = new BuySideMatch();
-							buyOrderMatch.setBQ(buySideOrder);
-							buyOrderMatch.setSQ(sellSideOrder);				
-							PriorityQueue<Order> tempBuyOrder = new PriorityQueue<Order>();
-							tempBuyOrder.addAll(buyOrderMatch.matchOrder());
+						//System.out.println(newOrder);
+						buySideOrder.add(newOrder);
+						BuySideMatch buyOrderMatch = new BuySideMatch();
+						buyOrderMatch.setBQ(buySideOrder);
+						buyOrderMatch.setSQ(sellSideOrder);				
+						PriorityQueue<Order> tempBuyOrder = new PriorityQueue<Order>();
+						tempBuyOrder.addAll(buyOrderMatch.matchOrder());
 
-							while(tempBuyOrder.peek()!=null)
-							{
-								if(tempBuyOrder.peek().getStatus() == 1)
-								{
-									currentPrice = tempBuyOrder.peek().getPrice();
-									ACLMessage reply = receiMsg.createReply();
-									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
-									reply.setPerformative(ACLMessage.INFORM);
-									reply.setOntology(ontology.getName());
-									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									myAgent.getContentManager().fillContent(reply, action);
-									myAgent.send(reply);
-								}
-								else if(tempBuyOrder.peek().getStatus() == 2)
-								{
-									currentPrice = tempBuyOrder.peek().getPrice();
-									ACLMessage reply = receiMsg.createReply();
-									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
-									reply.setPerformative(ACLMessage.PROPOSE);
-									reply.setOntology(ontology.getName());
-									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									myAgent.getContentManager().fillContent(reply, action);
-									myAgent.send(reply);
-								}
-								else if(tempBuyOrder.peek().getStatus() == 3)
-								{
-									ACLMessage reply = receiMsg.createReply();
-									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
-									reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-									reply.setOntology(ontology.getName());
-									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									myAgent.getContentManager().fillContent(reply, action);
-									myAgent.send(reply);
-								}
-							}
-						}
-						
-						else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
+						while(tempBuyOrder.peek()!=null)
 						{
-							//System.out.println(newOrder);
-							sellSideOrder.add(newOrder);
-							SellSideMatch sellOrderMatch = new SellSideMatch();
-							sellOrderMatch.setBQ(buySideOrder);
-							sellOrderMatch.setSQ(sellSideOrder);
-							
-							PriorityQueue<Order> tempSellOrder = new PriorityQueue<Order>();
-							tempSellOrder.addAll(sellOrderMatch.matchOrder());
-							
-							while(tempSellOrder.peek()!=null)
+							if(tempBuyOrder.peek().getStatus() == 1)
 							{
-								if(tempSellOrder.peek().getStatus() == 1)
-								{
-									currentPrice = tempSellOrder.peek().getPrice();
-									ACLMessage reply = receiMsg.createReply();
-									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
-									reply.setPerformative(ACLMessage.INFORM);
-									reply.setOntology(ontology.getName());
-									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									myAgent.getContentManager().fillContent(reply, action);
-									myAgent.send(reply);
-								}
-								else if(tempSellOrder.peek().getStatus() == 2)
-								{
-									currentPrice = tempSellOrder.peek().getPrice();
-									ACLMessage reply = receiMsg.createReply();
-									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
-									reply.setPerformative(ACLMessage.PROPOSE);
-									reply.setOntology(ontology.getName());
-									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									myAgent.getContentManager().fillContent(reply, action);
-									myAgent.send(reply);
-								}
-								else if(tempSellOrder.peek().getStatus() == 3)
-								{
-									ACLMessage reply = receiMsg.createReply();
-									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
-									reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
-									reply.setOntology(ontology.getName());
-									reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									myAgent.getContentManager().fillContent(reply, action);
-									myAgent.send(reply);
-								}
+								currentPrice = tempBuyOrder.peek().getPrice();
+								ACLMessage reply = receiMsg.createReply();
+								Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
+								reply.setPerformative(ACLMessage.INFORM);
+								reply.setOntology(ontology.getName());
+								reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(reply, action);
+								myAgent.send(reply);
+							}
+							else if(tempBuyOrder.peek().getStatus() == 2)
+							{
+								currentPrice = tempBuyOrder.peek().getPrice();
+								ACLMessage reply = receiMsg.createReply();
+								Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
+								reply.setPerformative(ACLMessage.PROPOSE);
+								reply.setOntology(ontology.getName());
+								reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(reply, action);
+								myAgent.send(reply);
+							}
+							else if(tempBuyOrder.peek().getStatus() == 3)
+							{
+								ACLMessage reply = receiMsg.createReply();
+								Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
+								reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+								reply.setOntology(ontology.getName());
+								reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(reply, action);
+								myAgent.send(reply);
 							}
 						}
-						
 					}
-					if(priceMsg.getPerformative() == ACLMessage.CFP)
+					
+					else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
 					{
-						System.out.println("-------------- " + currentPrice);
+						//System.out.println(newOrder);
+						sellSideOrder.add(newOrder);
+						SellSideMatch sellOrderMatch = new SellSideMatch();
+						sellOrderMatch.setBQ(buySideOrder);
+						sellOrderMatch.setSQ(sellSideOrder);
+						
+						PriorityQueue<Order> tempSellOrder = new PriorityQueue<Order>();
+						tempSellOrder.addAll(sellOrderMatch.matchOrder());
+						
+						while(tempSellOrder.peek()!=null)
+						{
+							if(tempSellOrder.peek().getStatus() == 1)
+							{
+								currentPrice = tempSellOrder.peek().getPrice();
+								ACLMessage reply = receiMsg.createReply();
+								Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
+								reply.setPerformative(ACLMessage.INFORM);
+								reply.setOntology(ontology.getName());
+								reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(reply, action);
+								myAgent.send(reply);
+							}
+							else if(tempSellOrder.peek().getStatus() == 2)
+							{
+								currentPrice = tempSellOrder.peek().getPrice();
+								ACLMessage reply = receiMsg.createReply();
+								Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
+								reply.setPerformative(ACLMessage.PROPOSE);
+								reply.setOntology(ontology.getName());
+								reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(reply, action);
+								myAgent.send(reply);
+							}
+							else if(tempSellOrder.peek().getStatus() == 3)
+							{
+								ACLMessage reply = receiMsg.createReply();
+								Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
+								reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
+								reply.setOntology(ontology.getName());
+								reply.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(reply, action);
+								myAgent.send(reply);
+							}
+						}
 					}
 					
 				}
-				catch(CodecException ce)
-				{
-					ce.printStackTrace();
-				}
-				catch(OntologyException oe)
-				{
-					oe.printStackTrace();
-				}
 			}
-		});
+			catch(CodecException ce)
+			{
+				ce.printStackTrace();
+			}
+			catch(OntologyException oe)
+			{
+				oe.printStackTrace();
+			}
+		}
 	}
+	private class PriceResponder extends CyclicBehaviour
+	{
+		public void action()
+		{
+			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), MessageTemplate.MatchConversationId("CheckPrice"));
+			ACLMessage priceMsg = receive(pt);
+			if(priceMsg != null)
+			{
 
+					ACLMessage replyPriceMsg = priceMsg.createReply();
+					replyPriceMsg.setPerformative(ACLMessage.INFORM);
+					replyPriceMsg.setConversationId("PriceInform");
+					replyPriceMsg.setContent(String.valueOf(currentPrice));
+					replyPriceMsg.addReceiver(priceMsg.getSender());
+					myAgent.send(replyPriceMsg);
+			}
+			else
+				block();
+			
+		}
+	}
 }

@@ -1,4 +1,4 @@
-package orderBookUpdated17;
+package orderBookUpdated18;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -30,6 +30,7 @@ public class InvestorAgent extends Agent
 	private ArrayList<Order> proposedOrder = new ArrayList<Order>();
 	private ArrayList<Order> filledOrder = new ArrayList<Order>();
 	private UpdateInventory ui = new UpdateInventory();
+	private static double currentPrice;
 	
 	protected void setup()
 	{
@@ -37,12 +38,13 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated17 " + getAID().getName());
+		System.out.println("This is updated18 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
 		addBehaviour(new MessageManager());
-		addBehaviour(new StockOperation(this, 3000));
+		addBehaviour(new PriceChecker(this, 3000));
+		addBehaviour(new PriceReceiver());
 	 }
 	
 	private class RandomGenerator extends TickerBehaviour
@@ -54,9 +56,9 @@ public class InvestorAgent extends Agent
 
 		protected void onTick()
 		{
-			int randomVolume = (int)(10+Math.random()*90);
+			int randomVolume = (int)(30+Math.random()*70);
 			int randomSide = (int)(1+Math.random()*2);
-			int randomTime = (int)(1000 + Math.random()*4000);
+			int randomTime = (int)(1000 + Math.random()*3000);
 			int randomType = (int)(1+Math.random()*2);
 			int randomSellPrice = (int)(50+Math.random()*6);
 			int randomBuyPrice = (int)(45+Math.random()*6);
@@ -71,7 +73,7 @@ public class InvestorAgent extends Agent
 					newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 					newOrder.setSymbol("GOOGLE");
 					newOrder.setSide(randomSide);
-					newOrder.setVolume(randomVolume);
+					newOrder.setVolume(randomSellPrice);
 					newOrder.setOpenTime(System.nanoTime());
 				}
 				else if(newOrder.getType() == 2)
@@ -122,16 +124,18 @@ public class InvestorAgent extends Agent
 			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
 			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
 			ACLMessage receiMsgFromEx = receive(mt);
+		
 			if(receiMsgFromEx!=null){
 				try
 				{
 					ContentElement ce = null;
+					ce = getContentManager().extractContent(receiMsgFromEx);	
+					Action act = (Action) ce;
+					Order replyOrder = (Order) act.getAction();
+					
 					if(receiMsgFromEx.getPerformative() == ACLMessage.INFORM)
 					{
-						ce = getContentManager().extractContent(receiMsgFromEx);	
-						Action act = (Action) ce;
-						Order replyOrder = (Order) act.getAction();
-						System.out.println("Filled !" + replyOrder + " " + getAID().getName());
+						System.out.println("Filled !" + replyOrder);
 						if(replyOrder.getType() == 1)
 						{
 							filledOrder.add(replyOrder);
@@ -149,16 +153,11 @@ public class InvestorAgent extends Agent
 								int plusVolume = replyOrder.equalOrder(filledOrder).getVolume() + replyOrder.getVolume();
 								replyOrder.equalOrder(filledOrder).setVolume(plusVolume);
 								ui.updateList(proposedOrder, replyOrder);
-							}
-								
+							}	
 						}
-						
 					}
 					else if(receiMsgFromEx.getPerformative() == ACLMessage.PROPOSE)
 					{
-						ce = getContentManager().extractContent(receiMsgFromEx);	
-						Action act = (Action) ce;
-						Order replyOrder = (Order) act.getAction();
 						System.out.println("Great PartlyFilled !" + replyOrder + " " + getAID().getName());
 						if(replyOrder.getType() == 1)
 						{
@@ -185,9 +184,6 @@ public class InvestorAgent extends Agent
 					}
 					else if(receiMsgFromEx.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 					{
-						ce = getContentManager().extractContent(receiMsgFromEx);	
-						Action act = (Action) ce;
-						Order replyOrder = (Order) act.getAction();
 						System.out.println("Rejected !" + replyOrder + " " + getAID().getName());
 						ui.updateList(proposedOrder, replyOrder);
 					}
@@ -211,10 +207,10 @@ public class InvestorAgent extends Agent
 				block();
 		}
 	}
-	private class StockOperation extends TickerBehaviour
+	private class PriceChecker extends TickerBehaviour
 	{
 
-		public StockOperation(Agent a, long period) 
+		public PriceChecker(Agent a, long period) 
 		{
 			super(a, period);
 		}
@@ -222,15 +218,32 @@ public class InvestorAgent extends Agent
 		{
 			try
 			{
-				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.CFP);
+				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.REQUEST);
+				checkPriceMsg.setConversationId("CheckPrice");
 				checkPriceMsg.addReceiver(CentralisedAgent);
-				checkPriceMsg.setContent("Checking Current Price");
+				
 				myAgent.send(checkPriceMsg);	
 			}
 			catch(Exception ex)
 			{
 					System.out.println(ex);
 			}
+		}
+	}
+	
+	private class PriceReceiver extends CyclicBehaviour
+	{
+		public void action() 
+		{
+			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchConversationId("PriceInform"));
+			ACLMessage receiPrice = receive(pt);
+			if(receiPrice != null)
+			{
+					currentPrice = Double.parseDouble(receiPrice.getContent());
+					//System.out.println("----- " +currentPrice);
+			}
+			else
+				block();	
 		}
 	}
 }
