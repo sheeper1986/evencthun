@@ -95,7 +95,7 @@ public class InvestorAgent extends Agent
 					}	
 				}
 				proposedOrder.add(newOrder);
-				System.out.println(proposedOrder);
+				System.out.println("Proposed order " + proposedOrder);
 				
 				Action act = new Action(CentralisedAgent, newOrder);
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
@@ -130,16 +130,7 @@ public class InvestorAgent extends Agent
 						ce = getContentManager().extractContent(receiMsgFromEx);	
 						Action act = (Action) ce;
 						Order replyOrder = (Order) act.getAction();
-						System.out.println("Filled !!!!!" + replyOrder + " " + getAID().getName());
-						filledOrder.add(replyOrder);
-						ui.updateList(proposedOrder, replyOrder);
-					}
-					else if(receiMsgFromEx.getPerformative() == ACLMessage.PROPOSE)
-					{
-						ce = getContentManager().extractContent(receiMsgFromEx);	
-						Action act = (Action) ce;
-						Order replyOrder = (Order) act.getAction();
-						System.out.println("Great PartlyFilled!!!!!" + replyOrder + " " + getAID().getName());
+						System.out.println("Filled !" + replyOrder + " " + getAID().getName());
 						if(replyOrder.getType() == 1)
 						{
 							filledOrder.add(replyOrder);
@@ -147,7 +138,48 @@ public class InvestorAgent extends Agent
 						}
 						else if(replyOrder.getType() == 2)
 						{
+							if(replyOrder.equalOrder(filledOrder) == null)
+							{
+								filledOrder.add(replyOrder);
+								ui.updateList(proposedOrder, replyOrder);
+							}
+							else
+							{
+								int plusVolume = replyOrder.equalOrder(filledOrder).getVolume() + replyOrder.getVolume();
+								replyOrder.equalOrder(filledOrder).setVolume(plusVolume);
+								ui.updateList(proposedOrder, replyOrder);
+							}
+								
+						}
+						
+					}
+					else if(receiMsgFromEx.getPerformative() == ACLMessage.PROPOSE)
+					{
+						ce = getContentManager().extractContent(receiMsgFromEx);	
+						Action act = (Action) ce;
+						Order replyOrder = (Order) act.getAction();
+						System.out.println("Great PartlyFilled !" + replyOrder + " " + getAID().getName());
+						if(replyOrder.getType() == 1)
+						{
 							filledOrder.add(replyOrder);
+							ui.updateList(proposedOrder, replyOrder);
+						}
+						else if(replyOrder.getType() == 2)
+						{
+							if(replyOrder.equalOrder(filledOrder) == null)
+							{
+								filledOrder.add(replyOrder);
+								int minusVolume = replyOrder.equalOrder(proposedOrder).getVolume() - replyOrder.getVolume();
+								replyOrder.equalOrder(proposedOrder).setVolume(minusVolume);
+							}
+							else
+							{
+								int plusVolume = replyOrder.equalOrder(filledOrder).getVolume() + replyOrder.getVolume();
+								replyOrder.equalOrder(filledOrder).setVolume(plusVolume);
+								int minusVolume = replyOrder.equalOrder(proposedOrder).getVolume() - replyOrder.getVolume();
+								replyOrder.equalOrder(proposedOrder).setVolume(minusVolume);
+							}
+								
 						}
 					}
 					else if(receiMsgFromEx.getPerformative() == ACLMessage.REJECT_PROPOSAL)
@@ -155,7 +187,7 @@ public class InvestorAgent extends Agent
 						ce = getContentManager().extractContent(receiMsgFromEx);	
 						Action act = (Action) ce;
 						Order replyOrder = (Order) act.getAction();
-						System.out.println("Rejected !!!!!" + replyOrder + " " + getAID().getName());
+						System.out.println("Rejected !" + replyOrder + " " + getAID().getName());
 						ui.updateList(proposedOrder, replyOrder);
 					}
 					System.out.println("Stock Inventory " + filledOrder);

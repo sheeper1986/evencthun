@@ -1,5 +1,6 @@
 package orderBookUpdated16;
 
+import java.util.ArrayList;
 import jade.content.AgentAction;
 
 public class Order implements AgentAction,Comparable<Order>
@@ -280,5 +281,17 @@ public class Order implements AgentAction,Comparable<Order>
 		this.setOpenTime(order.getOpenTime());
 		this.setStatus(order.getStatus());
 		return this;
+	}
+	
+	public Order equalOrder(ArrayList<Order> alo)
+	{
+		for(int i = 0; i < alo.size();i++)
+		{
+			if(this.getOrderID().equals(alo.get(i).getOrderID()))
+			{
+				return alo.get(i);
+			}
+		}
+		return null;
 	}
 }
