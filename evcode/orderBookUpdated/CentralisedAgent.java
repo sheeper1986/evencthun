@@ -25,7 +25,7 @@ public class CentralisedAgent extends Agent
 	private PriorityQueue<Order> sellSideOrder = new PriorityQueue<Order>();
 	private Codec codec = new SLCodec();
 	private Ontology ontology = OrderBookOntology.getInstance();
-	
+	private static double currentPrice = 0;
 	protected void setup()
 	{
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
@@ -64,6 +64,7 @@ public class CentralisedAgent extends Agent
 							{
 								if(tempBuyOrder.peek().getStatus() == 1)
 								{
+									currentPrice = tempBuyOrder.peek().getPrice();
 									ACLMessage reply = receiMsg.createReply();
 									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
 									reply.setPerformative(ACLMessage.INFORM);
@@ -74,6 +75,7 @@ public class CentralisedAgent extends Agent
 								}
 								else if(tempBuyOrder.peek().getStatus() == 2)
 								{
+									currentPrice = tempBuyOrder.peek().getPrice();
 									ACLMessage reply = receiMsg.createReply();
 									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
 									reply.setPerformative(ACLMessage.PROPOSE);
@@ -84,6 +86,7 @@ public class CentralisedAgent extends Agent
 								}
 								else if(tempBuyOrder.peek().getStatus() == 3)
 								{
+									currentPrice = tempBuyOrder.peek().getPrice();
 									ACLMessage reply = receiMsg.createReply();
 									Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
 									reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
@@ -110,6 +113,7 @@ public class CentralisedAgent extends Agent
 							{
 								if(tempSellOrder.peek().getStatus() == 1)
 								{
+									currentPrice = tempSellOrder.peek().getPrice();
 									ACLMessage reply = receiMsg.createReply();
 									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
 									reply.setPerformative(ACLMessage.INFORM);
@@ -120,6 +124,7 @@ public class CentralisedAgent extends Agent
 								}
 								else if(tempSellOrder.peek().getStatus() == 2)
 								{
+									currentPrice = tempSellOrder.peek().getPrice();
 									ACLMessage reply = receiMsg.createReply();
 									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
 									reply.setPerformative(ACLMessage.PROPOSE);
@@ -130,6 +135,7 @@ public class CentralisedAgent extends Agent
 								}
 								else if(tempSellOrder.peek().getStatus() == 3)
 								{
+									currentPrice = tempSellOrder.peek().getPrice();
 									ACLMessage reply = receiMsg.createReply();
 									Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
 									reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
