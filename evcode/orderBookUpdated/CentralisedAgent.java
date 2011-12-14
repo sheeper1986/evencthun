@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated20;
 
 import java.util.*;
 
@@ -26,15 +26,18 @@ public class CentralisedAgent extends Agent
 	private Codec codec = new SLCodec();
 	private Ontology ontology = OrderBookOntology.getInstance();
 	private static double currentPrice;
+	private UpdateInventory ui = new UpdateInventory();
+	
 	protected void setup()
 	{
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated18 " + getAID().getName());
+		System.out.println("This is updated20 " + getAID().getName());
 		
 		addBehaviour(new OrderManageSystem());
 		addBehaviour(new PriceResponder());
+		//addBehaviour(new CancelResponder());
 	}
 	
 	private class OrderManageSystem extends CyclicBehaviour
@@ -46,28 +49,28 @@ public class CentralisedAgent extends Agent
 			try
 			{
 				ContentElement ce = null;
+				ce = getContentManager().extractContent(receiMsg);	
+				Action act = (Action) ce;
+				Order newOrder = (Order) act.getAction();
+				
 				if(receiMsg.getPerformative() == ACLMessage.REQUEST)
-				{
-					ce = getContentManager().extractContent(receiMsg);	
-					Action act = (Action) ce;
-					Order newOrder = (Order) act.getAction();
-					
-					if(OrderSide.getSide(newOrder).equals(OrderSide.BUY))
+				{	
+					if(newOrder.getSide() == 1)
 					{
-						//System.out.println(newOrder);
 						buySideOrder.add(newOrder);
 						BuySideMatch buyOrderMatch = new BuySideMatch();
 						buyOrderMatch.setBQ(buySideOrder);
 						buyOrderMatch.setSQ(sellSideOrder);				
 						PriorityQueue<Order> tempBuyOrder = new PriorityQueue<Order>();
 						tempBuyOrder.addAll(buyOrderMatch.matchOrder());
+						ACLMessage reply = receiMsg.createReply();
 
 						while(tempBuyOrder.peek()!=null)
 						{
 							if(tempBuyOrder.peek().getStatus() == 1)
 							{
 								currentPrice = tempBuyOrder.peek().getPrice();
-								ACLMessage reply = receiMsg.createReply();
+								
 								Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
 								reply.setPerformative(ACLMessage.INFORM);
 								reply.setOntology(ontology.getName());
@@ -78,7 +81,7 @@ public class CentralisedAgent extends Agent
 							else if(tempBuyOrder.peek().getStatus() == 2)
 							{
 								currentPrice = tempBuyOrder.peek().getPrice();
-								ACLMessage reply = receiMsg.createReply();
+
 								Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
 								reply.setPerformative(ACLMessage.PROPOSE);
 								reply.setOntology(ontology.getName());
@@ -88,7 +91,7 @@ public class CentralisedAgent extends Agent
 							}
 							else if(tempBuyOrder.peek().getStatus() == 3)
 							{
-								ACLMessage reply = receiMsg.createReply();
+
 								Action action = new Action(receiMsg.getSender(),tempBuyOrder.poll());
 								reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 								reply.setOntology(ontology.getName());
@@ -99,9 +102,8 @@ public class CentralisedAgent extends Agent
 						}
 					}
 					
-					else if (OrderSide.getSide(newOrder).equals(OrderSide.SELL))
+					else if (newOrder.getSide() == 2)
 					{
-						//System.out.println(newOrder);
 						sellSideOrder.add(newOrder);
 						SellSideMatch sellOrderMatch = new SellSideMatch();
 						sellOrderMatch.setBQ(buySideOrder);
@@ -109,13 +111,14 @@ public class CentralisedAgent extends Agent
 						
 						PriorityQueue<Order> tempSellOrder = new PriorityQueue<Order>();
 						tempSellOrder.addAll(sellOrderMatch.matchOrder());
+						ACLMessage reply = receiMsg.createReply();
 						
 						while(tempSellOrder.peek()!=null)
 						{
 							if(tempSellOrder.peek().getStatus() == 1)
 							{
 								currentPrice = tempSellOrder.peek().getPrice();
-								ACLMessage reply = receiMsg.createReply();
+							
 								Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
 								reply.setPerformative(ACLMessage.INFORM);
 								reply.setOntology(ontology.getName());
@@ -126,7 +129,7 @@ public class CentralisedAgent extends Agent
 							else if(tempSellOrder.peek().getStatus() == 2)
 							{
 								currentPrice = tempSellOrder.peek().getPrice();
-								ACLMessage reply = receiMsg.createReply();
+								
 								Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
 								reply.setPerformative(ACLMessage.PROPOSE);
 								reply.setOntology(ontology.getName());
@@ -136,7 +139,6 @@ public class CentralisedAgent extends Agent
 							}
 							else if(tempSellOrder.peek().getStatus() == 3)
 							{
-								ACLMessage reply = receiMsg.createReply();
 								Action action = new Action(receiMsg.getSender(),tempSellOrder.poll());
 								reply.setPerformative(ACLMessage.REJECT_PROPOSAL);
 								reply.setOntology(ontology.getName());
@@ -148,6 +150,10 @@ public class CentralisedAgent extends Agent
 					}
 					
 				}
+				//else if(receiMsg.getPerformative() == ACLMessage.CANCEL)
+				//{
+					
+				//}
 			}
 			catch(CodecException ce)
 			{
@@ -173,6 +179,7 @@ public class CentralisedAgent extends Agent
 					replyPriceMsg.setConversationId("PriceInform");
 					replyPriceMsg.setContent(String.valueOf(currentPrice));
 					replyPriceMsg.addReceiver(priceMsg.getSender());
+					//System.out.println(replyPriceMsg);
 					myAgent.send(replyPriceMsg);
 			}
 			else
@@ -180,4 +187,54 @@ public class CentralisedAgent extends Agent
 			
 		}
 	}
-}
+/*	private class CancelResponder extends CyclicBehaviour
+	{
+		public void action()
+		{
+			MessageTemplate ct = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
+			ACLMessage cancelMsg = receive(ct);
+			if(cancelMsg != null)
+			{
+				try
+				{
+					ContentElement ce = null;
+					
+					if(cancelMsg.getPerformative() == ACLMessage.CANCEL)
+					{
+						ce = getContentManager().extractContent(cancelMsg);	
+						Action act = (Action) ce;
+						Order cancelOrder = (Order) act.getAction();
+						
+						if(cancelOrder.getType() == 1)
+				        {
+							ui.updateQueue(buySideOrder, cancelOrder);
+				        }
+						else
+						{
+							ui.updateQueue(sellSideOrder, cancelOrder);
+						}
+						
+						ACLMessage cancelMsgReply = cancelMsg.createReply();
+				        cancelMsgReply.setPerformative(ACLMessage.INFORM);
+				        cancelMsgReply.setConversationId("CancelOrder");
+				        cancelMsgReply.setContent(cancelOrder.getOrderID());
+				        cancelMsgReply.addReceiver(cancelMsg.getSender());
+	
+				        myAgent.send(cancelMsgReply);
+				     }
+				 }
+				catch(CodecException ce)
+				{
+					ce.printStackTrace();
+				}
+				catch(OntologyException oe)
+				{
+					oe.printStackTrace();
+				}
+			}
+			else
+				block();
+			}
+		}*/
+	}
+

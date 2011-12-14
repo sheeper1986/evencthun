@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated20;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -53,23 +53,23 @@ public class UpdateInventory {
 		}
 	}
 	
-	public ArrayList<Order> matchedOrders(ArrayList<Order> alo, double price)
+	public ArrayList<Order> matchedOrderSpread(ArrayList<Order> alo, double price, double spread)
 	{
 		ArrayList<Order> temp = new ArrayList<Order>();
 		int i = 0;
 		
 		while(i < alo.size())
 		{
-			if(Math.abs((alo.get(i).getPrice() - price)) > 4)
+			if(alo.get(i).getType() == 2 && Math.abs((alo.get(i).getPrice() - price)) > spread)
 			{
 					temp.add(alo.get(i));
 			}
 				i++;
 		}
-		if(temp.size() == 0)
-		{
-			return null;
-		}
+		//if(temp.size() == 0)
+		//{
+		//	return null;
+		//}
 		return temp;
 	}
 	

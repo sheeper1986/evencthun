@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated20;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -38,12 +38,12 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated18 " + getAID().getName());
+		System.out.println("This is updated20 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
 		addBehaviour(new MessageManager());
-		addBehaviour(new PriceChecker(this, 3000));
+		addBehaviour(new PriceChecker(this, 5000));
 		addBehaviour(new PriceReceiver());
 	 }
 	
@@ -58,7 +58,7 @@ public class InvestorAgent extends Agent
 		{
 			int randomVolume = (int)(30+Math.random()*70);
 			int randomSide = (int)(1+Math.random()*2);
-			int randomTime = (int)(1000 + Math.random()*3000);
+			int randomTime = (int)(500 + Math.random()*1000);
 			int randomType = (int)(1+Math.random()*2);
 			int randomSellPrice = (int)(50+Math.random()*6);
 			int randomBuyPrice = (int)(45+Math.random()*6);
@@ -198,10 +198,7 @@ public class InvestorAgent extends Agent
 				{
 					oe.printStackTrace();
 				}
-				catch(Exception e)
-				{
-					System.out.println(e);
-				}
+
 			}
 			else
 				block();
@@ -220,8 +217,8 @@ public class InvestorAgent extends Agent
 			{
 				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.REQUEST);
 				checkPriceMsg.setConversationId("CheckPrice");
+				checkPriceMsg.setContent("CheckPrice");
 				checkPriceMsg.addReceiver(CentralisedAgent);
-				
 				myAgent.send(checkPriceMsg);	
 			}
 			catch(Exception ex)
@@ -237,10 +234,46 @@ public class InvestorAgent extends Agent
 		{
 			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchConversationId("PriceInform"));
 			ACLMessage receiPrice = receive(pt);
+			System.out.println(receiPrice);
 			if(receiPrice != null)
 			{
 					currentPrice = Double.parseDouble(receiPrice.getContent());
-					//System.out.println("----- " +currentPrice);
+					//System.out.println(currentPrice);
+					/*if(proposedOrder.size() >= 5 && currentPrice != 0)
+					{
+						if(ui.matchedOrderSpread(proposedOrder, currentPrice, 3) != null)
+						{
+							int i = 0;
+							while (i < ui.matchedOrderSpread(proposedOrder, currentPrice, 3).size())
+							{
+								try
+								{
+									Action cancel = new Action(CentralisedAgent, ui.matchedOrderSpread(proposedOrder, currentPrice, 3).get(i));
+									ACLMessage cancelMsg = new ACLMessage(ACLMessage.CANCEL);
+									cancelMsg.addReceiver(CentralisedAgent);
+									cancelMsg.setOntology(ontology.getName());
+									cancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+                                    myAgent.getContentManager().fillContent(cancelMsg, cancel);
+                                    //System.out.println(cancelMsg);
+									myAgent.send(cancelMsg);
+									//ui.matchedOrderSpread(proposedOrder, currentPrice, 3).remove(i);
+									i++;
+								}
+								
+								catch (CodecException e)
+								{
+									
+									e.printStackTrace();
+								} catch (OntologyException e) 
+								{
+									
+									e.printStackTrace();
+								}
+								
+								
+							}
+						}
+					}*/
 			}
 			else
 				block();	
