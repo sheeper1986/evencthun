@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated21;
 
 public enum OrderType 
 {
@@ -25,13 +25,3 @@ public enum OrderType
 			return UNKNOWN_TYPE;	
 	}
 }
-
-/*public static OrderType transType(int i)
-{
-	if(i == 1)
-	{
-		return MARKET;
-	}
-	else
-		return LIMIT;
-}*/

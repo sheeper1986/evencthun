@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated21;
 
 public enum OrderStatus {
 
@@ -33,26 +33,3 @@ public enum OrderStatus {
 			return NEW;
 	}
 }
-
-/*public static OrderStatus transStatus(int i)
-{
-	if(i == 1)
-	{
-		return FILLED;
-	}
-	else if(i == 2)
-	{
-		return PART_FILLED;
-	}
-	else if(i == 3)
-	{
-		return REJECTED;
-	}
-	else if(i == 4)
-	{
-		return CANCELED;
-	}
-	else
-		return NEW;	
-}*/
-

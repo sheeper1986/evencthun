@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated21;
 
 import examples.content.eco.elements.Sell;
 import jade.content.onto.BasicOntology;
@@ -51,11 +51,9 @@ public class OrderBookOntology extends Ontology
 		aas.add(ORDER_DEALING_PRICE, (PrimitiveSchema)getSchema(BasicOntology.FLOAT),ObjectSchema.MANDATORY);
 		aas.add(ORDER_OPENTIME, (PrimitiveSchema)getSchema(BasicOntology.INTEGER),ObjectSchema.MANDATORY);
         aas.add(ORDER_STATUS, (PrimitiveSchema)getSchema(BasicOntology.INTEGER),ObjectSchema.MANDATORY);
-	}
-		
-		catch (OntologyException oe)
-		{
-			oe.printStackTrace();
+	}		
+	catch (OntologyException oe){
+		oe.printStackTrace();
 		}
 	}
 }

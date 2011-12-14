@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated21;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -72,21 +72,4 @@ public class UpdateInventory {
 		//}
 		return temp;
 	}
-	
-	/*public void updateListLimit(ArrayList<Order> proposedOrder, Order order)
-	{
-		ListIterator<Order> it = proposedOrder.listIterator();
-		
-		while(it.hasNext())
-		{
-			if(it.next().getOrderID().equals(order.getOrderID()))
-			{
-				int restVolume = it.next().getVolume() - order.getVolume();
-				Order newOrder = new Order();
-				newOrder.setAll(order);
-				newOrder.setVolume(restVolume);
-				it.set(newOrder);
-			}
-		}
-	}*/
 }

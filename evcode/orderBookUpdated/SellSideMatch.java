@@ -1,4 +1,4 @@
-package orderBookUpdated18;
+package orderBookUpdated21;
 
 import java.util.PriorityQueue;
 
@@ -102,8 +102,7 @@ public class SellSideMatch
 						sellSideOrder.peek().setStatus(2);
 						sellSideOrder.peek().setVolume(sumSellVolume);
 						sellSideOrder.peek().setDealingPrice(sumSellPrice/sumSellVolume);
-						processedOrder.add(sellSideOrder.poll());
-						
+						processedOrder.add(sellSideOrder.poll());					
 						break;
 					}
 					else
@@ -129,8 +128,7 @@ public class SellSideMatch
 							sellSideOrder.peek().setStatus(1);
 							sellSideOrder.peek().setDealingPrice(averagePrice);
 							sellSideOrder.peek().setVolume(allVolume);
-							processedOrder.add(sellSideOrder.poll());
-							
+							processedOrder.add(sellSideOrder.poll());							
 							break;
 						}
 						else if(sellSideOrder.peek().getVolume() == buySideOrder.peek().getVolume())
@@ -146,8 +144,7 @@ public class SellSideMatch
 							sellSideOrder.peek().setVolume(allVolume);
 
 							processedOrder.add(sellSideOrder.poll());
-							processedOrder.add(buySideOrder.poll());
-							
+							processedOrder.add(buySideOrder.poll());							
 							break;
 						}
 						else
@@ -189,8 +186,7 @@ public class SellSideMatch
 					 processedOrder.add(filledOrder);
 					 
 					 buySideOrder.peek().setVolume(aVolume);
-					 
-					
+					 	
 					 processedOrder.add(sellSideOrder.poll());
 					
 					 return processedOrder;
@@ -246,7 +242,6 @@ public class SellSideMatch
 									 buySideOrder.peek().setVolume(cVolume);
 
 									 processedOrder.add(sellSideOrder.poll());
-		
 									 break;
 								}	
 									 else if(sellSideOrder.peek().getVolume() == buySideOrder.peek().getVolume())
@@ -257,8 +252,7 @@ public class SellSideMatch
 										 buySideOrder.peek().setOpenTime(System.nanoTime());
 										 
 										 processedOrder.add(sellSideOrder.poll());
-										 processedOrder.add(buySideOrder.poll());
-										 
+										 processedOrder.add(buySideOrder.poll());									 
 										 break;
 									}
 									 else
