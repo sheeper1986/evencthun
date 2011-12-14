@@ -1,4 +1,4 @@
-package orderBookUpdated20;
+package orderBookUpdated18;
 
 import java.util.ArrayList;
 import jade.content.AgentAction;
@@ -283,7 +283,7 @@ public class Order implements AgentAction,Comparable<Order>
 		return this;
 	}
 	
-	public Order equalOrder(ArrayList<Order> alo)
+	public Order sameOrderIn(ArrayList<Order> alo)
 	{
 		for(int i = 0; i < alo.size();i++)
 		{

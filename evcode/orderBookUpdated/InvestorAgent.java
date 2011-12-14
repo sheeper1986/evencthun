@@ -1,4 +1,4 @@
-package orderBookUpdated20;
+package orderBookUpdated18;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -27,8 +27,8 @@ public class InvestorAgent extends Agent
 	private Ontology ontology = OrderBookOntology.getInstance();
 	private Codec codec = new SLCodec();
 	private static int id = 0;
-	private ArrayList<Order> proposedOrder = new ArrayList<Order>();
-	private ArrayList<Order> filledOrder = new ArrayList<Order>();
+	private ArrayList<Order> proposedOrders = new ArrayList<Order>();
+	private ArrayList<Order> stockInventory = new ArrayList<Order>();
 	private UpdateInventory ui = new UpdateInventory();
 	private static double currentPrice;
 	
@@ -38,12 +38,12 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated20 " + getAID().getName());
+		System.out.println("This is updated18 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
 		addBehaviour(new MessageManager());
-		addBehaviour(new PriceChecker(this, 5000));
+		addBehaviour(new PriceChecker(this, 3000));
 		addBehaviour(new PriceReceiver());
 	 }
 	
@@ -73,7 +73,7 @@ public class InvestorAgent extends Agent
 					newOrder.setOrderID(getAID().getLocalName()+String.valueOf(id++));
 					newOrder.setSymbol("GOOGLE");
 					newOrder.setSide(randomSide);
-					newOrder.setVolume(randomSellPrice);
+					newOrder.setVolume(randomVolume);
 					newOrder.setOpenTime(System.nanoTime());
 				}
 				else if(newOrder.getType() == 2)
@@ -97,8 +97,8 @@ public class InvestorAgent extends Agent
 						newOrder.setOpenTime(System.nanoTime());
 					}	
 				}
-				proposedOrder.add(newOrder);
-				System.out.println("Proposed order " + proposedOrder);
+				proposedOrders.add(newOrder);
+				System.out.println("Proposed orders " + proposedOrders);
 				
 				Action act = new Action(CentralisedAgent, newOrder);
 				ACLMessage msg = new ACLMessage(ACLMessage.REQUEST);
@@ -123,71 +123,77 @@ public class InvestorAgent extends Agent
 		{
 			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
 			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
-			ACLMessage receiMsgFromEx = receive(mt);
+			ACLMessage processedOrderMsg = receive(mt);
 		
-			if(receiMsgFromEx!=null){
+			if(processedOrderMsg!=null){
 				try
 				{
 					ContentElement ce = null;
-					ce = getContentManager().extractContent(receiMsgFromEx);	
+					ce = getContentManager().extractContent(processedOrderMsg);	
 					Action act = (Action) ce;
-					Order replyOrder = (Order) act.getAction();
+					Order processedOrder = (Order) act.getAction();
 					
-					if(receiMsgFromEx.getPerformative() == ACLMessage.INFORM)
+					if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 					{
-						System.out.println("Filled !" + replyOrder);
-						if(replyOrder.getType() == 1)
+						System.out.println("Filled !" + processedOrder + " ----- ");
+						if(processedOrder.getType() == 1)
 						{
-							filledOrder.add(replyOrder);
-							ui.updateList(proposedOrder, replyOrder);
+							stockInventory.add(processedOrder);
+							ui.updateList(proposedOrders, processedOrder);
 						}
-						else if(replyOrder.getType() == 2)
+						else if(processedOrder.getType() == 2)
 						{
-							if(replyOrder.equalOrder(filledOrder) == null)
+							if(processedOrder.sameOrderIn(stockInventory) == null)
 							{
-								filledOrder.add(replyOrder);
-								ui.updateList(proposedOrder, replyOrder);
+								stockInventory.add(processedOrder);
+								ui.updateList(proposedOrders, processedOrder);
 							}
 							else
 							{
-								int plusVolume = replyOrder.equalOrder(filledOrder).getVolume() + replyOrder.getVolume();
-								replyOrder.equalOrder(filledOrder).setVolume(plusVolume);
-								ui.updateList(proposedOrder, replyOrder);
+								int plusVolume = processedOrder.sameOrderIn(stockInventory).getVolume() + processedOrder.getVolume();
+								processedOrder.sameOrderIn(stockInventory).setVolume(plusVolume);
+								processedOrder.sameOrderIn(stockInventory).setStatus(1);
+								ui.updateList(proposedOrders, processedOrder);
 							}	
 						}
 					}
-					else if(receiMsgFromEx.getPerformative() == ACLMessage.PROPOSE)
+					else if(processedOrderMsg.getPerformative() == ACLMessage.PROPOSE)
 					{
-						System.out.println("Great PartlyFilled !" + replyOrder + " " + getAID().getName());
-						if(replyOrder.getType() == 1)
+						System.out.println("Great PartlyFilled !" + processedOrder + " ----- ");
+						if(processedOrder.getType() == 1)
 						{
-							filledOrder.add(replyOrder);
-							ui.updateList(proposedOrder, replyOrder);
+							stockInventory.add(processedOrder);
+							ui.updateList(proposedOrders, processedOrder);
 						}
-						else if(replyOrder.getType() == 2)
+						else if(processedOrder.getType() == 2)
 						{
-							if(replyOrder.equalOrder(filledOrder) == null)
+							if(processedOrder.sameOrderIn(stockInventory) == null)
 							{
-								filledOrder.add(replyOrder);
-								int minusVolume = replyOrder.equalOrder(proposedOrder).getVolume() - replyOrder.getVolume();
-								replyOrder.equalOrder(proposedOrder).setVolume(minusVolume);
+								stockInventory.add(processedOrder);
+								int minusVolume = processedOrder.sameOrderIn(proposedOrders).getVolume() - processedOrder.getVolume();
+								processedOrder.sameOrderIn(proposedOrders).setVolume(minusVolume);
 							}
 							else
 							{
-								int plusVolume = replyOrder.equalOrder(filledOrder).getVolume() + replyOrder.getVolume();
-								replyOrder.equalOrder(filledOrder).setVolume(plusVolume);
-								int minusVolume = replyOrder.equalOrder(proposedOrder).getVolume() - replyOrder.getVolume();
-								replyOrder.equalOrder(proposedOrder).setVolume(minusVolume);
+								int plusVolume = processedOrder.sameOrderIn(stockInventory).getVolume() + processedOrder.getVolume();
+								processedOrder.sameOrderIn(stockInventory).setVolume(plusVolume);
+								int minusVolume = processedOrder.sameOrderIn(proposedOrders).getVolume() - processedOrder.getVolume();
+								processedOrder.sameOrderIn(proposedOrders).setVolume(minusVolume);
 							}
 								
 						}
 					}
-					else if(receiMsgFromEx.getPerformative() == ACLMessage.REJECT_PROPOSAL)
+					else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 					{
-						System.out.println("Rejected !" + replyOrder + " " + getAID().getName());
-						ui.updateList(proposedOrder, replyOrder);
+						System.out.println("Rejected !" + processedOrder + " ----- ");
+						ui.updateList(proposedOrders, processedOrder);
 					}
-					System.out.println("Stock Inventory " + filledOrder);
+					else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
+					{
+						System.out.println("Cancel Successful !" + processedOrder + " ----- ");
+						ui.updateList(proposedOrders, processedOrder);
+					}
+					System.out.println("Stock Inventory " + stockInventory);
 				}
 				
 				catch(CodecException ce)
@@ -217,8 +223,8 @@ public class InvestorAgent extends Agent
 			{
 				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.REQUEST);
 				checkPriceMsg.setConversationId("CheckPrice");
-				checkPriceMsg.setContent("CheckPrice");
 				checkPriceMsg.addReceiver(CentralisedAgent);
+				
 				myAgent.send(checkPriceMsg);	
 			}
 			catch(Exception ex)
@@ -234,26 +240,26 @@ public class InvestorAgent extends Agent
 		{
 			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchConversationId("PriceInform"));
 			ACLMessage receiPrice = receive(pt);
-			System.out.println(receiPrice);
 			if(receiPrice != null)
 			{
 					currentPrice = Double.parseDouble(receiPrice.getContent());
-					//System.out.println(currentPrice);
-					/*if(proposedOrder.size() >= 5 && currentPrice != 0)
+					if(proposedOrders.size() >= 5 && currentPrice != 0)
 					{
-						if(ui.matchedOrderSpread(proposedOrder, currentPrice, 3) != null)
+						ArrayList<Order> temp = new ArrayList();
+						temp.addAll(ui.matchedOrderSpread(proposedOrders, currentPrice, 3));
+						if( temp != null)
 						{
 							int i = 0;
-							while (i < ui.matchedOrderSpread(proposedOrder, currentPrice, 3).size())
+							while (i < temp.size())
 							{
 								try
 								{
-									Action cancel = new Action(CentralisedAgent, ui.matchedOrderSpread(proposedOrder, currentPrice, 3).get(i));
+									Action cancelAct = new Action(CentralisedAgent, temp.get(i));
 									ACLMessage cancelMsg = new ACLMessage(ACLMessage.CANCEL);
 									cancelMsg.addReceiver(CentralisedAgent);
 									cancelMsg.setOntology(ontology.getName());
 									cancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-                                    myAgent.getContentManager().fillContent(cancelMsg, cancel);
+                                    myAgent.getContentManager().fillContent(cancelMsg, cancelAct);
                                     //System.out.println(cancelMsg);
 									myAgent.send(cancelMsg);
 									//ui.matchedOrderSpread(proposedOrder, currentPrice, 3).remove(i);
@@ -273,7 +279,7 @@ public class InvestorAgent extends Agent
 								
 							}
 						}
-					}*/
+					}
 			}
 			else
 				block();	
