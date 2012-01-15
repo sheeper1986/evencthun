@@ -1,8 +1,8 @@
-package orderBookUpdated21;
+package orderBookUpdated29;
 
 public enum OrderStatus {
 
-	NEW("0"), FILLED("1"), PART_FILLED("2"), REJECTED("3"), CANCELED("4");
+	NEW_ORDER("0"), FILLED("1"), PART_FILLED("2"), REJECTED("3"), CANCELED("4");
 	
 	public final String value;
 	
@@ -30,6 +30,6 @@ public enum OrderStatus {
 			return CANCELED;
 		}
 		else
-			return NEW;
+			return NEW_ORDER;
 	}
 }

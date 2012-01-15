@@ -1,4 +1,4 @@
-package orderBookUpdated21;
+package orderBookUpdated29;
 
 import examples.content.eco.elements.Sell;
 import jade.content.onto.BasicOntology;
@@ -20,6 +20,7 @@ public class OrderBookOntology extends Ontology
 	public static final String ORDER_SIDE = "side";
 	public static final String ORDER_SYMBOL = "symbol";
 	public static final String ORDER_VOLUME = "volume";
+	public static final String ORDER_PROCESSED_VOLUME = "processedVolume";
 	public static final String ORDER_PRICE = "price";
 	public static final String ORDER_DEALING_PRICE = "dealingPrice";
 	public static final String ORDER_OPENTIME = "openTime";
@@ -47,6 +48,7 @@ public class OrderBookOntology extends Ontology
 		aas.add(ORDER_SIDE, (PrimitiveSchema)getSchema(BasicOntology.INTEGER));
 		aas.add(ORDER_SYMBOL, (PrimitiveSchema)getSchema(BasicOntology.STRING));
 		aas.add(ORDER_VOLUME, (PrimitiveSchema)getSchema(BasicOntology.INTEGER),ObjectSchema.MANDATORY);
+		aas.add(ORDER_PROCESSED_VOLUME, (PrimitiveSchema)getSchema(BasicOntology.INTEGER),ObjectSchema.MANDATORY);
 		aas.add(ORDER_PRICE, (PrimitiveSchema)getSchema(BasicOntology.FLOAT),ObjectSchema.MANDATORY);
 		aas.add(ORDER_DEALING_PRICE, (PrimitiveSchema)getSchema(BasicOntology.FLOAT),ObjectSchema.MANDATORY);
 		aas.add(ORDER_OPENTIME, (PrimitiveSchema)getSchema(BasicOntology.INTEGER),ObjectSchema.MANDATORY);

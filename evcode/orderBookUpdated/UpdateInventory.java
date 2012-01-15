@@ -1,4 +1,4 @@
-package orderBookUpdated21;
+package orderBookUpdated29;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -7,29 +7,106 @@ import java.util.PriorityQueue;
 
 public class UpdateInventory {
 	private Order order;
-	private ArrayList<Order> proposedOrder = new ArrayList<Order>();
-	private PriorityQueue<Order> nonfilledOrder = new PriorityQueue<Order>();
+	private ArrayList<Order> pOList = new ArrayList<Order>();
+	private PriorityQueue<Order> oBList = new PriorityQueue<Order>();
 	
 	public UpdateInventory()
 	{
 		
 	}
 	
-	public UpdateInventory(ArrayList<Order> proposedOrder, Order order)
+	public UpdateInventory(Order order, ArrayList<Order> pOList)
 	{
 		this.order = order;
-		this.proposedOrder = proposedOrder; 
+		this.pOList = pOList; 
 	}
 	
-	public UpdateInventory(PriorityQueue<Order> nonfilledOrder, Order order)
+	public UpdateInventory(Order order, PriorityQueue<Order> oBList)
 	{
 		this.order = order;
-		this.nonfilledOrder = nonfilledOrder; 
+		this.oBList = oBList; 
 	}
 	
-	public void updateList(ArrayList<Order> proposedOrder, Order order)
+	public void updatePendingOrderList(Order order, ArrayList<Order> pOList)
 	{
-		ListIterator<Order> it = proposedOrder.listIterator();
+		if(pOList != null)
+		{
+			if(order.getStatus() == 1 || order.getStatus() == 2)
+			{
+				if(order.getType() == 1)
+				{
+					int i = 0;
+					while(i < pOList.size())
+					{
+						if(pOList.get(i).getOrderID().equals(order.getOrderID()))
+						{
+							pOList.get(i).setDealingPrice(order.getDealingPrice());
+							pOList.get(i).setProcessedVolume(order.getVolume());
+							pOList.get(i).setStatus(order.getStatus());
+						}
+						i++;
+					}
+				}
+				else if(order.getType() == 2)
+				{
+					int i = 0;
+					while(i < pOList.size())
+					{
+						if(pOList.get(i).getOrderID().equals(order.getOrderID()))
+						{
+							int updatedVolume = pOList.get(i).getProcessedVolume() + order.getVolume();
+							pOList.get(i).setProcessedVolume(updatedVolume);
+							pOList.get(i).setStatus(order.getStatus());
+						}
+						i++;
+					}
+				}
+			}
+			else if(order.getStatus() == 3 || order.getStatus() == 4)
+			{
+				ListIterator<Order> it = pOList.listIterator();				
+				while(it.hasNext())
+				{
+					if(it.next().getOrderID().equals(order.getOrderID()))
+					{
+						it.remove();
+					}
+				}
+			}		
+			/*if(order.getStatus() == 1 || order.getStatus() == 2)
+			{
+				int i = 0;
+				while(i < pOList.size())
+				{
+					if(pOList.get(i).getOrderID().equals(order.getOrderID()))
+					{
+						int updatedVolume = pOList.get(i).getProcessedVolume() + order.getVolume();
+						pOList.get(i).setProcessedVolume(updatedVolume);
+						pOList.get(i).setStatus(order.getStatus());
+					}
+					i++;
+				}
+			}*/
+			/*else if(order.getStatus() == 2)
+			{
+				int i = 0;
+				while(i < pOList.size())
+				{
+					if(pOList.get(i).getOrderID().equals(order.getOrderID()))
+					{
+						int updatedVolume = pOList.get(i).getProcessedVolume() + order.getProcessedVolume();
+						pOList.get(i).setProcessedVolume(updatedVolume);
+						pOList.get(i).setStatus(order.getStatus());
+					}
+					i++;
+				}
+			}*/
+		}
+	}
+	
+	public void updateQueue(Order order, PriorityQueue<Order> oBList)
+	{
+		Iterator<Order> it = oBList.iterator();
 		
 		while(it.hasNext())
 		{
@@ -40,29 +117,15 @@ public class UpdateInventory {
 		}
 	}
 	
-	public void updateQueue(PriorityQueue<Order> nonfilledOrder, Order order)
-	{
-		Iterator<Order> it = nonfilledOrder.iterator();
-		
-		while(it.hasNext())
-		{
-			if(it.next().getOrderID().equals(order.getOrderID()))
-			{
-				it.remove();
-			}
-		}
-	}
-	
-	public ArrayList<Order> matchedOrderSpread(ArrayList<Order> alo, double price, double spread)
+	public ArrayList<Order> matchedOrderSpread(ArrayList<Order> pOList, double price, double spread)
 	{
 		ArrayList<Order> temp = new ArrayList<Order>();
 		int i = 0;
-		
-		while(i < alo.size())
+		while(i < pOList.size())
 		{
-			if(alo.get(i).getType() == 2 && Math.abs((alo.get(i).getPrice() - price)) > spread)
+			if(pOList.get(i).getType() == 2 && pOList.get(i).getStatus() == 0 && Math.abs((pOList.get(i).getPrice() - price)) > spread)
 			{
-					temp.add(alo.get(i));
+					temp.add(pOList.get(i));
 			}
 				i++;
 		}

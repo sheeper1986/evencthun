@@ -21,7 +21,7 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.*;
 
-public class InvestorAgent extends Agent
+public class InvestorAgentSecond extends Agent
 {
 	private AID CentralisedAgent = new AID("CentralisedAgent", AID.ISLOCALNAME);
 	private Ontology ontology = OrderBookOntology.getInstance();
@@ -29,7 +29,7 @@ public class InvestorAgent extends Agent
 	private int id = 0;
 	private UpdateInventory ui = new UpdateInventory();
 	private double currentPrice;
-	private ArrayList<Order> pendingOrderList = new ArrayList<Order>();
+	private ArrayList<Order> pendingOrderListII = new ArrayList<Order>();
 	//private ArrayList<Order> stockInventory = new ArrayList<Order>();
 	
 	protected void setup()
@@ -97,8 +97,8 @@ public class InvestorAgent extends Agent
 					}	
 				}
 				
-				pendingOrderList.add(newOrder);
-				System.out.println("Pending orders " + pendingOrderList);
+				pendingOrderListII.add(newOrder);
+				System.out.println("Pending ordersII " + pendingOrderListII);
 				
 				Action action = new Action(CentralisedAgent, newOrder);
 				ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.REQUEST);
@@ -135,24 +135,25 @@ public class InvestorAgent extends Agent
 					if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 					{
 						System.out.println("Filled !" + processedOrder);
-						ui.updatePendingOrderList(processedOrder, pendingOrderList);
+						ui.updatePendingOrderList(processedOrder, pendingOrderListII);
 					}
 					else if(processedOrderMsg.getPerformative() == ACLMessage.PROPOSE)
 					{
 						System.out.println("Great PartlyFilled !" + processedOrder);
-						ui.updatePendingOrderList(processedOrder, pendingOrderList);
+						ui.updatePendingOrderList(processedOrder, pendingOrderListII);
 					}
 					else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 					{
 						System.out.println("Rejected !" + processedOrder);
-						ui.updatePendingOrderList(processedOrder, pendingOrderList);
+						ui.updatePendingOrderList(processedOrder, pendingOrderListII);
+						//ui.updateList(proposedOrders, processedOrder);
 					}
 					else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
 					{
 						System.out.println("Cancel Successful !" + processedOrder);
-						ui.updatePendingOrderList(processedOrder, pendingOrderList);
+						ui.updatePendingOrderList(processedOrder, pendingOrderListII);
 					}
-					System.out.println("Updated Pending List " + pendingOrderList);
+					System.out.println("Updated Pending List II" + pendingOrderListII);
 				}
 				
 				catch(CodecException ce){
@@ -200,10 +201,10 @@ public class InvestorAgent extends Agent
 			if(receiPrice != null)
 			{
 				currentPrice = Double.parseDouble(receiPrice.getContent());
-				if(pendingOrderList.size()>5 && currentPrice != 0)
+				if(pendingOrderListII.size()>5 && currentPrice != 0)
 				{
 					ArrayList<Order> temp = new ArrayList();
-					temp.addAll(ui.matchedOrderSpread(pendingOrderList, currentPrice, 1));
+					temp.addAll(ui.matchedOrderSpread(pendingOrderListII, currentPrice, 1));
 					if( temp != null)
 					{
 						int i = 0;
