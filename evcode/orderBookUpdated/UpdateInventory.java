@@ -1,4 +1,4 @@
-package orderBookUpdated29;
+package orderBookUpdated29_1;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 public class UpdateInventory {
 	private Order order;
 	private ArrayList<Order> pOList = new ArrayList<Order>();
+	private ArrayList<Asset> assetList = new ArrayList<Asset>();
 	private PriorityQueue<Order> oBList = new PriorityQueue<Order>();
 	
 	public UpdateInventory()
@@ -73,34 +74,6 @@ public class UpdateInventory {
 					}
 				}
 			}		
-			/*if(order.getStatus() == 1 || order.getStatus() == 2)
-			{
-				int i = 0;
-				while(i < pOList.size())
-				{
-					if(pOList.get(i).getOrderID().equals(order.getOrderID()))
-					{
-						int updatedVolume = pOList.get(i).getProcessedVolume() + order.getVolume();
-						pOList.get(i).setProcessedVolume(updatedVolume);
-						pOList.get(i).setStatus(order.getStatus());
-					}
-					i++;
-				}
-			}*/
-			/*else if(order.getStatus() == 2)
-			{
-				int i = 0;
-				while(i < pOList.size())
-				{
-					if(pOList.get(i).getOrderID().equals(order.getOrderID()))
-					{
-						int updatedVolume = pOList.get(i).getProcessedVolume() + order.getProcessedVolume();
-						pOList.get(i).setProcessedVolume(updatedVolume);
-						pOList.get(i).setStatus(order.getStatus());
-					}
-					i++;
-				}
-			}*/
 		}
 	}
 	
@@ -129,10 +102,6 @@ public class UpdateInventory {
 			}
 				i++;
 		}
-		//if(temp.size() == 0)
-		//{
-		//	return null;
-		//}
 		return temp;
 	}
 }

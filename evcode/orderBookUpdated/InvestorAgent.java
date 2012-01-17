@@ -1,4 +1,4 @@
-package orderBookUpdated29;
+package orderBookUpdated29_1;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -30,20 +30,21 @@ public class InvestorAgent extends Agent
 	private UpdateInventory ui = new UpdateInventory();
 	private double currentPrice;
 	private ArrayList<Order> pendingOrderList = new ArrayList<Order>();
-	//private ArrayList<Order> stockInventory = new ArrayList<Order>();
+	private ArrayList<Asset> assetList = new ArrayList<Asset>();
+	private double fundAvailable;
 	
 	protected void setup()
 	{
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated29 " + getAID().getName());
+		System.out.println("This is updated29_1 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
 		addBehaviour(new ProcessedOrderManager());
 		addBehaviour(new PriceChecker(this, 3000));
-		addBehaviour(new PriceReceiver());
+		addBehaviour(new AutoCancel());
 	 }
 	
 	private class RandomGenerator extends TickerBehaviour
@@ -73,7 +74,7 @@ public class InvestorAgent extends Agent
 					newOrder.setSymbol("GOOGLE");
 					newOrder.setSide(randomSide);
 					newOrder.setVolume(randomVolume);
-					newOrder.setOpenTime(System.nanoTime());
+					newOrder.setOpenTime(System.currentTimeMillis());
 				}
 				else if(newOrder.getType() == 2)
 				{
@@ -85,7 +86,7 @@ public class InvestorAgent extends Agent
 						newOrder.setSymbol("GOOGLE");
 						newOrder.setVolume(randomVolume);
 						newOrder.setPrice(randomBuyPrice);
-						newOrder.setOpenTime(System.nanoTime());
+						newOrder.setOpenTime(System.currentTimeMillis());
 					}
 					else if(newOrder.getSide() == 2)
 					{
@@ -93,7 +94,7 @@ public class InvestorAgent extends Agent
 						newOrder.setSymbol("GOOGLE");
 						newOrder.setVolume(randomVolume);
 						newOrder.setPrice(randomSellPrice);
-						newOrder.setOpenTime(System.nanoTime());
+						newOrder.setOpenTime(System.currentTimeMillis());
 					}	
 				}
 				
@@ -102,7 +103,6 @@ public class InvestorAgent extends Agent
 				
 				Action action = new Action(CentralisedAgent, newOrder);
 				ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.REQUEST);
-				
 				orderRequestMsg.addReceiver(CentralisedAgent);
 				orderRequestMsg.setOntology(ontology.getName());
 				orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -120,7 +120,7 @@ public class InvestorAgent extends Agent
 	{
 		public void action()
 		{
-			MessageTemplate mt = MessageTemplate.and( MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName()) ); 
+			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName())); 
 			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
 			ACLMessage processedOrderMsg = receive(mt);
 		
@@ -137,31 +137,33 @@ public class InvestorAgent extends Agent
 						System.out.println("Filled !" + processedOrder);
 						ui.updatePendingOrderList(processedOrder, pendingOrderList);
 					}
+					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.PROPOSE)
 					{
 						System.out.println("Great PartlyFilled !" + processedOrder);
 						ui.updatePendingOrderList(processedOrder, pendingOrderList);
 					}
+					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 					{
 						System.out.println("Rejected !" + processedOrder);
 						ui.updatePendingOrderList(processedOrder, pendingOrderList);
 					}
+					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
 					{
 						System.out.println("Cancel Successful !" + processedOrder);
 						ui.updatePendingOrderList(processedOrder, pendingOrderList);
 					}
+					
 					System.out.println("Updated Pending List " + pendingOrderList);
-				}
-				
+				}	
 				catch(CodecException ce){
 					ce.printStackTrace();
 				}
 				catch(OntologyException oe){
 					oe.printStackTrace();
 				}
-
 			}
 			else
 				block();
@@ -182,7 +184,6 @@ public class InvestorAgent extends Agent
 				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.REQUEST);
 				checkPriceMsg.setConversationId("CheckPrice");
 				checkPriceMsg.addReceiver(CentralisedAgent);
-				//System.out.println(checkPriceMsg+ "~~~~~~~~~~~~~~~");
 				myAgent.send(checkPriceMsg);	
 			}
 			catch(Exception ex){
@@ -191,19 +192,20 @@ public class InvestorAgent extends Agent
 		}
 	}
 	
-	private class PriceReceiver extends CyclicBehaviour
+	private class AutoCancel extends CyclicBehaviour
 	{
 		public void action() 
 		{
 			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchConversationId("PriceInform"));
 			ACLMessage receiPrice = receive(pt);
+			
 			if(receiPrice != null)
 			{
 				currentPrice = Double.parseDouble(receiPrice.getContent());
 				if(pendingOrderList.size()>5 && currentPrice != 0)
 				{
 					ArrayList<Order> temp = new ArrayList();
-					temp.addAll(ui.matchedOrderSpread(pendingOrderList, currentPrice, 1));
+					temp.addAll(ui.matchedOrderSpread(pendingOrderList, currentPrice, 3));
 					if( temp != null)
 					{
 						int i = 0;
@@ -217,7 +219,6 @@ public class InvestorAgent extends Agent
 								cancelMsg.setOntology(ontology.getName());
 								cancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
                                 myAgent.getContentManager().fillContent(cancelMsg, cancelAct);
-                                //System.out.println(cancelMsg);
 								myAgent.send(cancelMsg);
 								//temp.remove(i);
 								i++;

@@ -1,4 +1,4 @@
-package orderBookUpdated29;
+package orderBookUpdated29_1;
 
 import java.util.ArrayList;
 import jade.content.AgentAction;
@@ -16,60 +16,7 @@ public class Order implements AgentAction,Comparable<Order>
 	{
 		
 	}
-	
-	/*public Order(String orderID, String symbol, int volume)
-	{
-		this.orderID = orderID;
-		this.symbol = symbol;
-		this.volume = volume;
-	}
-	
-	public Order(String orderID, String symbol, int volume, Long openTime )
-	{
-		this.orderID = orderID;
-		this.symbol = symbol;
-		this.volume = volume;
-		this.openTime = openTime;
-	}
-	
-	public Order(String orderID, String symbol, int volume, double price)
-	{
-		this.orderID = orderID;
-		this.symbol = symbol;
-		this.volume = volume;
-		this.price = price;
-	}
-	
-	public Order(String orderID, String symbol, int volume, double price, Long openTime)
-	{
-		this.orderID = orderID;
-		this.symbol = symbol;
-		this.volume = volume;
-		this.price = price;
-		this.openTime = openTime;
-	}
-	
-	public Order(String orderID, String symbol, int volume, double price, Long openTime, int status)
-	{
-		this.orderID = orderID;
-		this.symbol = symbol;
-		this.volume = volume;
-		this.price = price;
-		this.openTime = openTime;
-		this.status = status;
-	}
-	
-	public Order(String orderID, String symbol, int volume, double price, double dealingPrice, Long openTime, int status)
-	{
-		this.orderID = orderID;
-		this.symbol = symbol;
-		this.volume = volume;
-		this.price = price;
-		this.dealingPrice = dealingPrice;
-		this.openTime = openTime;
-		this.status = status;
-	}*/
-	
+
 	public void setStatus(int status)
 	{
 		this.status = status;

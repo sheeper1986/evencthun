@@ -1,4 +1,4 @@
-package orderBookUpdated29;
+package orderBookUpdated29_1;
 
 import java.util.*;
 
@@ -30,7 +30,7 @@ public class CentralisedAgent extends Agent
 	
 	protected void setup()
 	{
-		System.out.println("This is updated29 " + getAID().getName());
+		System.out.println("This is updated29_1 " + getAID().getName());
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
