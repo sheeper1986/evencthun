@@ -1,6 +1,10 @@
-package orderBookUpdated29_1;
+package orderBookUpdated29_2;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.ListIterator;
+import java.util.PriorityQueue;
+
 import jade.content.AgentAction;
 
 public class Order implements AgentAction,Comparable<Order>
@@ -10,6 +14,8 @@ public class Order implements AgentAction,Comparable<Order>
 	private double price, dealingPrice;
 	private Long openTime;
 	private String orderID;
+	private ArrayList<Order> pOList = new ArrayList<Order>();
+	private PriorityQueue<Order> oBList = new PriorityQueue<Order>();
 	
 	//Constructor
 	public Order()
@@ -200,6 +206,83 @@ public class Order implements AgentAction,Comparable<Order>
 			//return this.getOpenTime() < order2.getOpenTime() ? -1 : (this.getOpenTime() > order2.getOpenTime() ? 1 : 0);
 	}
 	
+	public Order setAll(Order order)
+	{
+		this.setOrderID(order.getOrderID());
+		this.setSymbol(order.getSymbol());
+		this.setType(order.getType());
+		this.setSide(order.getSide());
+		this.setVolume(order.getVolume());
+		this.setProcessedVolume(order.getProcessedVolume());
+		this.setPrice(order.getPrice());
+		this.setDealingPrice(order.getDealingPrice());
+		this.setOpenTime(order.getOpenTime());
+		this.setStatus(order.getStatus());
+		return this;
+	}
+	
+	public void updatePendingOrderList(ArrayList<Order> pOList)
+	{
+		if(pOList != null)
+		{
+			if(this.getStatus() == 1 || this.getStatus() == 2)
+			{
+				if(this.getType() == 1)
+				{
+					int i = 0;
+					while(i < pOList.size())
+					{
+						if(pOList.get(i).getOrderID().equals(this.getOrderID()))
+						{
+							pOList.get(i).setDealingPrice(this.getDealingPrice());
+							pOList.get(i).setProcessedVolume(this.getVolume());
+							pOList.get(i).setStatus(this.getStatus());
+						}
+						i++;
+					}
+				}
+				else if(this.getType() == 2)
+				{
+					int i = 0;
+					while(i < pOList.size())
+					{
+						if(pOList.get(i).getOrderID().equals(this.getOrderID()))
+						{
+							int updatedVolume = pOList.get(i).getProcessedVolume() + this.getVolume();
+							pOList.get(i).setProcessedVolume(updatedVolume);
+							pOList.get(i).setStatus(this.getStatus());
+						}
+						i++;
+					}
+				}
+			}
+			else if(this.getStatus() == 3 || this.getStatus() == 4)
+			{
+				ListIterator<Order> it = pOList.listIterator();				
+				while(it.hasNext())
+				{
+					if(it.next().getOrderID().equals(this.getOrderID()))
+					{
+						it.remove();
+					}
+				}
+			}		
+		}
+	}
+	
+	public void updateQueue(PriorityQueue<Order> oBList)
+	{
+		Iterator<Order> it = oBList.iterator();
+		
+		while(it.hasNext())
+		{
+			if(it.next().getOrderID().equals(this.getOrderID()))
+			{
+				it.remove();
+			}
+		}
+	}
+	
 	public String toString()
 	{
 		if(this.isNewOrder())
@@ -225,31 +308,4 @@ public class Order implements AgentAction,Comparable<Order>
 			return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume "+ this.getVolume() + " " + OrderStatus.getOrderStatus(this));
 		}		
 	}
-	
-	public Order setAll(Order order)
-	{
-		this.setOrderID(order.getOrderID());
-		this.setSymbol(order.getSymbol());
-		this.setType(order.getType());
-		this.setSide(order.getSide());
-		this.setVolume(order.getVolume());
-		this.setProcessedVolume(order.getProcessedVolume());
-		this.setPrice(order.getPrice());
-		this.setDealingPrice(order.getDealingPrice());
-		this.setOpenTime(order.getOpenTime());
-		this.setStatus(order.getStatus());
-		return this;
-	}
-	
-	/*public Order sameOrderIn(ArrayList<Order> alo)
-	{
-		for(int i = 0; i < alo.size(); i++)
-		{
-			if(this.getOrderID().equals(alo.get(i).getOrderID()))
-			{
-				return alo.get(i);
-			}
-		}
-		return null;
-	}*/
 }

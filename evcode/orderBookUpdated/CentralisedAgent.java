@@ -1,4 +1,4 @@
-package orderBookUpdated29_1;
+package orderBookUpdated29_2;
 
 import java.util.*;
 
@@ -26,11 +26,10 @@ public class CentralisedAgent extends Agent
 	private Codec codec = new SLCodec();
 	private Ontology ontology = OrderBookOntology.getInstance();
 	private double currentPrice;
-	private UpdateInventory ui = new UpdateInventory();
 	
 	protected void setup()
 	{
-		System.out.println("This is updated29_1 " + getAID().getName());
+		System.out.println("This is updated29_2 " + getAID().getName());
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
@@ -168,11 +167,11 @@ public class CentralisedAgent extends Agent
 				{
 					if(newOrder.getSide() == 1)
 			        {
-						ui.updateQueue(newOrder, buySideOrder);
+						newOrder.updateQueue(buySideOrder);
 			        }
 					else
 					{
-						ui.updateQueue(newOrder, sellSideOrder);
+						newOrder.updateQueue(sellSideOrder);
 					}
 					newOrder.setStatus(4);
 					//ACLMessage replyCancelMsg = orderRequestMsg.createReply();
