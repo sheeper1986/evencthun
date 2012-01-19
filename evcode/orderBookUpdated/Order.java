@@ -1,4 +1,4 @@
-package orderBookUpdated29_2;
+package orderBookUpdated29_9;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -121,6 +121,20 @@ public class Order implements AgentAction,Comparable<Order>
 		return openTime;
 	}
 	
+	public void setProcessedOrder(int status, int processedVolume, double dealingPrice, Long openTime)
+	{
+		this.status = status;
+		this.processedVolume = processedVolume;
+		this.dealingPrice = dealingPrice;
+		this.openTime = openTime;
+	}
+	
+	public void setProcessedOrder(int status, Long openTime)
+	{
+		this.status = status;
+		this.openTime = openTime;
+	}
+	
 	public boolean isMarketOrder()
 	{
 		return this.getType() == 1;
@@ -223,51 +237,48 @@ public class Order implements AgentAction,Comparable<Order>
 	
 	public void updatePendingOrderList(ArrayList<Order> pOList)
 	{
-		if(pOList != null)
+		if(this.getStatus() == 1 || this.getStatus() == 2)
 		{
-			if(this.getStatus() == 1 || this.getStatus() == 2)
+			if(this.getType() == 1)
 			{
-				if(this.getType() == 1)
+				int i = 0;
+				while(i < pOList.size())
 				{
-					int i = 0;
-					while(i < pOList.size())
+					if(pOList.get(i).getOrderID().equals(this.getOrderID()))
 					{
-						if(pOList.get(i).getOrderID().equals(this.getOrderID()))
-						{
-							pOList.get(i).setDealingPrice(this.getDealingPrice());
-							pOList.get(i).setProcessedVolume(this.getVolume());
-							pOList.get(i).setStatus(this.getStatus());
-						}
-						i++;
+						pOList.get(i).setDealingPrice(this.getDealingPrice());
+						pOList.get(i).setProcessedVolume(this.getProcessedVolume());
+						pOList.get(i).setStatus(this.getStatus());
 					}
-				}
-				else if(this.getType() == 2)
-				{
-					int i = 0;
-					while(i < pOList.size())
-					{
-						if(pOList.get(i).getOrderID().equals(this.getOrderID()))
-						{
-							int updatedVolume = pOList.get(i).getProcessedVolume() + this.getVolume();
-							pOList.get(i).setProcessedVolume(updatedVolume);
-							pOList.get(i).setStatus(this.getStatus());
-						}
-						i++;
-					}
+					i++;
 				}
 			}
-			else if(this.getStatus() == 3 || this.getStatus() == 4)
+			else if(this.getType() == 2)
 			{
-				ListIterator<Order> it = pOList.listIterator();				
-				while(it.hasNext())
+				int i = 0;
+				while(i < pOList.size())
 				{
-					if(it.next().getOrderID().equals(this.getOrderID()))
+					if(pOList.get(i).getOrderID().equals(this.getOrderID()))
 					{
-						it.remove();
+						int updatedVolume = pOList.get(i).getProcessedVolume() + this.getProcessedVolume();
+						pOList.get(i).setProcessedVolume(updatedVolume);
+						pOList.get(i).setStatus(this.getStatus());
 					}
+					i++;
 				}
-			}		
+			}
 		}
+		else if(this.getStatus() == 3 || this.getStatus() == 4)
+		{
+			ListIterator<Order> it = pOList.listIterator();				
+			while(it.hasNext())
+			{
+				if(it.next().getOrderID().equals(this.getOrderID()))
+				{
+					it.remove();
+				}
+			}
+		}		
 	}
 	
 	public void updateQueue(PriorityQueue<Order> oBList)

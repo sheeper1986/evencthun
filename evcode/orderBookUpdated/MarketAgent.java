@@ -1,4 +1,4 @@
-package orderBookUpdated29_2;
+package orderBookUpdated29_9;
 
 import java.util.*;
 
@@ -19,17 +19,17 @@ import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
-public class CentralisedAgent extends Agent
+public class MarketAgent extends Agent
 {
-	private PriorityQueue<Order> buySideOrder = new PriorityQueue<Order>();
-	private PriorityQueue<Order> sellSideOrder = new PriorityQueue<Order>();
+	private PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
+	private PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
 	private Codec codec = new SLCodec();
 	private Ontology ontology = OrderBookOntology.getInstance();
 	private double currentPrice;
 	
 	protected void setup()
 	{
-		System.out.println("This is updated29_2 " + getAID().getName());
+		System.out.println("This is updated29_9 " + getAID().getName());
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
@@ -57,12 +57,11 @@ public class CentralisedAgent extends Agent
 				{	
 					if(newOrder.getSide() == 1)
 					{
-						buySideOrder.add(newOrder);
-						BuySideMatch buyOrderMatch = new BuySideMatch();
-						buyOrderMatch.setBQ(buySideOrder);
-						buyOrderMatch.setSQ(sellSideOrder);				
+						buySideOrders.add(newOrder);
+						BuySideOrderMatch buySideMatch = new BuySideOrderMatch();
+						buySideMatch.setOrderbook(buySideOrders, sellSideOrders);
 						ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
-						tempBuyOrder.addAll(buyOrderMatch.matchOrder());
+						tempBuyOrder.addAll(buySideMatch.matchBuyOrder());
 
 						if(tempBuyOrder != null)
 						{
@@ -110,13 +109,12 @@ public class CentralisedAgent extends Agent
 					}
 					else if (newOrder.getSide() == 2)
 					{
-						sellSideOrder.add(newOrder);
-						SellSideMatch sellOrderMatch = new SellSideMatch();
-						sellOrderMatch.setBQ(buySideOrder);
-						sellOrderMatch.setSQ(sellSideOrder);
+						sellSideOrders.add(newOrder);
+						SellSideOrderMatch sellOrderMatch = new SellSideOrderMatch();
+						sellOrderMatch.setOrderbook(sellSideOrders, buySideOrders);
 						
 						ArrayList<Order> tempSellOrder = new ArrayList<Order>();
-						tempSellOrder.addAll(sellOrderMatch.matchOrder());
+						tempSellOrder.addAll(sellOrderMatch.matchSellOrder());
 						
 						if(tempSellOrder != null)
 						{
@@ -167,11 +165,11 @@ public class CentralisedAgent extends Agent
 				{
 					if(newOrder.getSide() == 1)
 			        {
-						newOrder.updateQueue(buySideOrder);
+						newOrder.updateQueue(buySideOrders);
 			        }
 					else
 					{
-						newOrder.updateQueue(sellSideOrder);
+						newOrder.updateQueue(sellSideOrders);
 					}
 					newOrder.setStatus(4);
 					//ACLMessage replyCancelMsg = orderRequestMsg.createReply();

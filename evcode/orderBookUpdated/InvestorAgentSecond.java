@@ -1,4 +1,4 @@
-package orderBookUpdated29_2;
+package orderBookUpdated29_9;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -23,13 +23,14 @@ import java.util.*;
 
 public class InvestorAgentSecond extends Agent
 {
-	private AID CentralisedAgent = new AID("CentralisedAgent", AID.ISLOCALNAME);
+	private AID MarketAgent = new AID("MarketAgent", AID.ISLOCALNAME);
 	private Ontology ontology = OrderBookOntology.getInstance();
 	private Codec codec = new SLCodec();
 	private int id = 0;
 	private TradingAlgorithm tradeAlgos = new TradingAlgorithm();
 	private ArrayList<Order> pendingOrderListII = new ArrayList<Order>();
-	private ArrayList<Asset> assetList = new ArrayList<Asset>();
+	private ArrayList<Asset> assetListII = new ArrayList<Asset>();
+	private Asset asset = new Asset();
 	private double fundAvailable;
 	
 	protected void setup()
@@ -37,7 +38,7 @@ public class InvestorAgentSecond extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated29_2 " + getAID().getName());
+		System.out.println("This is updated29_8 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));
@@ -100,9 +101,9 @@ public class InvestorAgentSecond extends Agent
 				pendingOrderListII.add(newOrder);
 				System.out.println("Pending ordersII " + pendingOrderListII);
 				
-				Action action = new Action(CentralisedAgent, newOrder);
+				Action action = new Action(MarketAgent, newOrder);
 				ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.REQUEST);
-				orderRequestMsg.addReceiver(CentralisedAgent);
+				orderRequestMsg.addReceiver(MarketAgent);
 				orderRequestMsg.setOntology(ontology.getName());
 				orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 				myAgent.getContentManager().fillContent(orderRequestMsg, action);
@@ -135,12 +136,14 @@ public class InvestorAgentSecond extends Agent
 					{
 						System.out.println("Filled !" + processedOrder);
 						processedOrder.updatePendingOrderList(pendingOrderListII);
+						//asset.updateAssetList(assetList, processedOrder);
 					}
 					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.PROPOSE)
 					{
 						System.out.println("Great PartlyFilled !" + processedOrder);
 						processedOrder.updatePendingOrderList(pendingOrderListII);
+						//asset.updateAssetList(assetList, processedOrder);
 					}
 					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
@@ -155,7 +158,8 @@ public class InvestorAgentSecond extends Agent
 						processedOrder.updatePendingOrderList(pendingOrderListII);
 					}
 					
-					System.out.println("Updated Pending List II" + pendingOrderListII);
+					System.out.println("Updated Pending ListII " + pendingOrderListII);
+					//System.out.println("Updated Asset List " + assetList);
 				}	
 				catch(CodecException ce){
 					ce.printStackTrace();
@@ -182,7 +186,7 @@ public class InvestorAgentSecond extends Agent
 			{
 				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.REQUEST);
 				checkPriceMsg.setConversationId("CheckPrice");
-				checkPriceMsg.addReceiver(CentralisedAgent);
+				checkPriceMsg.addReceiver(MarketAgent);
 				myAgent.send(checkPriceMsg);	
 			}
 			catch(Exception ex){
@@ -212,9 +216,9 @@ public class InvestorAgentSecond extends Agent
 						{
 							try
 							{
-								Action cancelAct = new Action(CentralisedAgent, temp.get(i));
+								Action cancelAct = new Action(MarketAgent, temp.get(i));
 								ACLMessage cancelMsg = new ACLMessage(ACLMessage.CANCEL);
-								cancelMsg.addReceiver(CentralisedAgent);
+								cancelMsg.addReceiver(MarketAgent);
 								cancelMsg.setOntology(ontology.getName());
 								cancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
                                 myAgent.getContentManager().fillContent(cancelMsg, cancelAct);

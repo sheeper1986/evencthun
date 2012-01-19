@@ -1,4 +1,4 @@
-package orderBookUpdated29_2;
+package orderBookUpdated29_9;
 
 import java.util.ArrayList;
 
@@ -32,9 +32,9 @@ public class Asset
 		return assetVolume;
 	}
 	
-	public void setAssetCost(double cost)
+	public void setAssetCost(double assetCost)
 	{
-		this.assetCost = cost;
+		this.assetCost = assetCost;
 	}
 	public double getAssetCost()
 	{
@@ -55,7 +55,7 @@ public class Asset
 		if(order.getSide() == 1)
 		{
 			this.setAssetSymbol(order.getSymbol());
-			this.setAssetCost((this.getAssetCost()*this.getAssetVolume() + order.getPrice()*order.getVolume())/(this.getAssetVolume() + order.getVolume()));
+			this.setAssetCost((this.getAssetCost()*this.getAssetVolume() + order.getDealingPrice()*order.getVolume())/(this.getAssetVolume() + order.getVolume()));
 			this.setAssetVolume(this.getAssetVolume() + order.getVolume());
 			//this.setProfit(this.getTotalVolume()*this.getCost() - this.getTotalVolume()*currentPrice);
 		}
