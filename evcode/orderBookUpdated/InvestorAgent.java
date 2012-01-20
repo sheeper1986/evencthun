@@ -1,4 +1,4 @@
-package orderBookUpdated29_9;
+package orderBookUpdated29_9_1;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -38,7 +38,7 @@ public class InvestorAgent extends Agent
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
-		System.out.println("This is updated29_9 " + getAID().getName());
+		System.out.println("This is updated29_9_1 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
 		addBehaviour(new RandomGenerator(this, 5000));

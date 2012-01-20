@@ -1,4 +1,4 @@
-package orderBookUpdated29_9;
+package orderBookUpdated29_9_1;
 
 import java.util.ArrayList;
 import java.util.PriorityQueue;
@@ -8,6 +8,7 @@ public class BuySideOrderMatch
 	private PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
 	private PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
 	private ArrayList<Order> processedOrders = new ArrayList<Order>();
+	private int id = 0;
 	
 	public BuySideOrderMatch()
 	{
@@ -51,10 +52,17 @@ public class BuySideOrderMatch
 			if(buySideOrders.peek().getVolume() == sellSideOrders.peek().getVolume())
 			{
 				buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-	            sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-				
 				processedOrders.add(buySideOrders.poll());
-				processedOrders.add(sellSideOrders.poll());
+				
+				if(sellSideOrders.peek().getOrderID().contains("Test"))
+				{
+					sellSideOrders.poll();
+				}
+				else
+				{
+					sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
+					processedOrders.add(sellSideOrders.poll());
+				}
 				
 				return processedOrders;
 			}
@@ -66,13 +74,18 @@ public class BuySideOrderMatch
 				buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
 				processedOrders.add(buySideOrders.poll());
 				
-				Order filledOrder = new Order();
-				filledOrder.setAll(sellSideOrders.peek());
-				filledOrder.setProcessedOrder(2, filledVolume, filledOrder.getPrice(), System.currentTimeMillis());
-				processedOrders.add(filledOrder);
-	
-				sellSideOrders.peek().setVolume(unfilledVolume);
-				
+				if(sellSideOrders.peek().getOrderID().contains("Test"))
+				{
+					sellSideOrders.peek().setVolume(unfilledVolume);
+				}
+				else
+				{
+					Order filledOrder = new Order();
+					filledOrder.setAll(sellSideOrders.peek());
+					filledOrder.setProcessedOrder(2, filledVolume, filledOrder.getPrice(), System.currentTimeMillis());
+					processedOrders.add(filledOrder);
+					sellSideOrders.peek().setVolume(unfilledVolume);
+				}
 				return processedOrders;
 			}
 			else
@@ -88,8 +101,15 @@ public class BuySideOrderMatch
 					totalBuyPrice += (sellSideOrders.peek().getVolume())*(sellSideOrders.peek().getPrice());
 					totalBuyVolume += sellSideOrders.peek().getVolume();
 					
-					sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-					processedOrders.add(sellSideOrders.poll());
+					if(sellSideOrders.peek().getOrderID().contains("Test"))
+					{
+						sellSideOrders.poll();
+					}
+					else
+					{
+						sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
+						processedOrders.add(sellSideOrders.poll());
+					}
 				
 					if(sellSideOrders.peek() == null)
 					{
@@ -109,14 +129,21 @@ public class BuySideOrderMatch
 							
 							buySideOrders.peek().setProcessedOrder(1, totalVolume, totalPrice/totalVolume, System.currentTimeMillis());
 							buySideOrders.peek().setVolume(originalVolume);
-							processedOrders.add(buySideOrders.poll());	
-
-							Order filledOrder = new Order();
-							filledOrder.setAll(sellSideOrders.peek());
-							filledOrder.setProcessedOrder(2, filledVolume, filledOrder.getPrice(), System.currentTimeMillis());
-							processedOrders.add(filledOrder);
+							processedOrders.add(buySideOrders.poll());
 							
-							sellSideOrders.peek().setVolume(unfilledVolumeII);
+							if(sellSideOrders.peek().getOrderID().contains("Test"))
+							{
+								sellSideOrders.peek().setVolume(unfilledVolumeII);
+							}
+							else
+							{
+								Order filledOrder = new Order();
+								filledOrder.setAll(sellSideOrders.peek());
+								filledOrder.setProcessedOrder(2, filledVolume, filledOrder.getPrice(), System.currentTimeMillis());
+								processedOrders.add(filledOrder);
+								
+								sellSideOrders.peek().setVolume(unfilledVolumeII);
+							}
 							break;
 						}
 						else if(buySideOrders.peek().getVolume() == sellSideOrders.peek().getVolume())
@@ -126,10 +153,17 @@ public class BuySideOrderMatch
 							
 							buySideOrders.peek().setProcessedOrder(1, totalVolume, totalPrice/totalVolume, System.currentTimeMillis());
 							buySideOrders.peek().setVolume(originalVolume);
-							sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-
 							processedOrders.add(buySideOrders.poll());
-							processedOrders.add(sellSideOrders.poll());							
+							
+							if(sellSideOrders.peek().getOrderID().contains("Test"))
+							{
+								sellSideOrders.poll();
+							}
+							else
+							{
+								sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
+								processedOrders.add(sellSideOrders.poll());			
+							}
 							break;
 						}
 						else
@@ -137,7 +171,7 @@ public class BuySideOrderMatch
 					 }
 				  }
 				return processedOrders;
-			   }
+			  }
 		 }
 		 else if(((buySideOrders.peek()!=null) &&buySideOrders.peek().isLimitOrder())&&((sellSideOrders.peek()!=null) &&sellSideOrders.peek().isLimitOrder()))
 		 {
@@ -145,12 +179,24 @@ public class BuySideOrderMatch
 			 {
 				 if(buySideOrders.peek().getVolume() == sellSideOrders.peek().getVolume())
 				 {
-					 buySideOrders.peek().setProcessedOrder(1,  buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
-					 sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-					 
-					 processedOrders.add(buySideOrders.poll());
-					 processedOrders.add(sellSideOrders.poll());
-					 
+					 if(buySideOrders.peek().getOrderID().contains("Test"))
+					 {
+						 buySideOrders.poll();
+					 }
+					 else
+					 {
+						 buySideOrders.peek().setProcessedOrder(1,  buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
+						 processedOrders.add(buySideOrders.poll());
+					 }
+					 if(sellSideOrders.peek().getOrderID().contains("Test"))
+					 {
+						 sellSideOrders.poll();
+					 }
+					 else
+					 {
+						 sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
+						 processedOrders.add(sellSideOrders.poll());
+					 }
 					 return processedOrders;
 				 }
 				 else if(buySideOrders.peek().getVolume() < sellSideOrders.peek().getVolume())
@@ -158,16 +204,28 @@ public class BuySideOrderMatch
 					 int unfilledVolume = sellSideOrders.peek().getVolume() - buySideOrders.peek().getVolume();
 					 int filledVolume = buySideOrders.peek().getVolume();
 					 
-					 buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
-					 processedOrders.add(buySideOrders.poll());
-					 
-					 Order filledOrder = new Order();
-					 filledOrder.setAll(sellSideOrders.peek());
-					 filledOrder.setProcessedOrder(2, filledVolume, filledOrder.getPrice(), System.currentTimeMillis());
-					 processedOrders.add(filledOrder);
+					 if(buySideOrders.peek().getOrderID().contains("Test"))
+					 {
+						 buySideOrders.poll();
+					 }
+					 else
+					 {
+						 buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
+						 processedOrders.add(buySideOrders.poll());
+					 }
+					 if(sellSideOrders.peek().getOrderID().contains("Test"))
+					 {
+						 sellSideOrders.peek().setVolume(unfilledVolume);
+					 }
+					 else
+					 {
+						 Order filledOrder = new Order();
+						 filledOrder.setAll(sellSideOrders.peek());
+						 filledOrder.setProcessedOrder(2, filledVolume, filledOrder.getPrice(), System.currentTimeMillis());
+						 processedOrders.add(filledOrder);
 
-					 sellSideOrders.peek().setVolume(unfilledVolume);
-
+						 sellSideOrders.peek().setVolume(unfilledVolume);
+					 }
 					 return processedOrders;
 				 }
 				 else
@@ -177,16 +235,29 @@ public class BuySideOrderMatch
 						 int unfilledBuySideVolume = buySideOrders.peek().getVolume() - sellSideOrders.peek().getVolume();
 						 int filledBuySideVolume = sellSideOrders.peek().getVolume();
 						 
-						 Order filledBuyOrder = new Order();
-						 filledBuyOrder.setAll(buySideOrders.peek());
-						 filledBuyOrder.setProcessedOrder(2, filledBuySideVolume, filledBuyOrder.getPrice(), System.currentTimeMillis());
-						 processedOrders.add(filledBuyOrder);
-						 
-					     buySideOrders.peek().setVolume(unfilledBuySideVolume);
+						 if(buySideOrders.peek().getOrderID().contains("Test"))
+						 {
+							 buySideOrders.peek().setVolume(unfilledBuySideVolume);
+						 }
+						 else
+						 {
+							 Order filledBuyOrder = new Order();
+							 filledBuyOrder.setAll(buySideOrders.peek());
+							 filledBuyOrder.setProcessedOrder(2, filledBuySideVolume, filledBuyOrder.getPrice(), System.currentTimeMillis());
+							 processedOrders.add(filledBuyOrder);
+							 
+						     buySideOrders.peek().setVolume(unfilledBuySideVolume);
+						 }
+					     if(sellSideOrders.peek().getOrderID().contains("Test"))
+					     {
+					    	 sellSideOrders.poll(); 
+					     }
+					     else
+					     {
+					    	 sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
+							 processedOrders.add(sellSideOrders.poll());
+					     }
 					     
-					     sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-						 processedOrders.add(sellSideOrders.poll());
-						
 						 if(sellSideOrders.peek() == null)
 						 {
 							 break;
@@ -205,24 +276,50 @@ public class BuySideOrderMatch
 									 int unfilledSellSideVolume = sellSideOrders.peek().getVolume() - (buySideOrders.peek().getVolume());
 									 int filledSellSideVolume = buySideOrders.peek().getVolume();
 									 
-									 buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
-									 processedOrders.add(buySideOrders.poll());			
-									 
-									 Order filledSellOrder = new Order();
-									 filledSellOrder.setAll(sellSideOrders.peek());
-									 filledSellOrder.setProcessedOrder(2, filledSellSideVolume, filledSellOrder.getPrice(), System.currentTimeMillis());
-									 processedOrders.add(filledSellOrder);
-									 
-									 sellSideOrders.peek().setVolume(unfilledSellSideVolume);				 
+									 if(buySideOrders.peek().getOrderID().contains("Test"))
+									 {
+										 buySideOrders.poll();
+									 }
+									 else
+									 {
+										 buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
+										 processedOrders.add(buySideOrders.poll());		
+									 }	
+									 if(sellSideOrders.peek().getOrderID().contains("Test"))
+									 {
+										 sellSideOrders.peek().setVolume(unfilledSellSideVolume);	
+									 }
+									 else
+									 {
+										 Order filledSellOrder = new Order();
+										 filledSellOrder.setAll(sellSideOrders.peek());
+										 filledSellOrder.setProcessedOrder(2, filledSellSideVolume, filledSellOrder.getPrice(), System.currentTimeMillis());
+										 processedOrders.add(filledSellOrder);
+										 
+										 sellSideOrders.peek().setVolume(unfilledSellSideVolume);		
+									 }	 
 									 break;
 								 }
 								 else if(buySideOrders.peek().getVolume() == sellSideOrders.peek().getVolume())
 								 {
-									 buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
-									 sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
-									 
-									 processedOrders.add(buySideOrders.poll());
-									 processedOrders.add(sellSideOrders.poll());								 
+									 if(buySideOrders.peek().getOrderID().contains("Test"))
+									 {
+										 buySideOrders.poll();
+									 }
+									 else
+									 {
+										 buySideOrders.peek().setProcessedOrder(1, buySideOrders.peek().getVolume(), buySideOrders.peek().getPrice(), System.currentTimeMillis());
+										 processedOrders.add(buySideOrders.poll());
+									 }
+									 if(sellSideOrders.peek().getOrderID().contains("Test"))
+									 {
+										 sellSideOrders.poll(); 
+									 }
+									 else
+									 {
+										 sellSideOrders.peek().setProcessedOrder(1, sellSideOrders.peek().getVolume(), sellSideOrders.peek().getPrice(), System.currentTimeMillis());
+										 processedOrders.add(sellSideOrders.poll());								 
+									 }							 
 									 break;
 								 }
 								 else

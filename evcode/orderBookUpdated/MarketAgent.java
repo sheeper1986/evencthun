@@ -1,4 +1,4 @@
-package orderBookUpdated29_9;
+package orderBookUpdated29_9_1;
 
 import java.util.*;
 
@@ -29,9 +29,13 @@ public class MarketAgent extends Agent
 	
 	protected void setup()
 	{
-		System.out.println("This is updated29_9 " + getAID().getName());
+		System.out.println("This is updated29_9_1 " + getAID().getName());
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
+		
+		InitializeOrder io = new InitializeOrder();
+		io.initializeBuyOrder(buySideOrders, 10);
+		io.initializeSellOrder(sellSideOrders, 10);
 		
 		addBehaviour(new OrderManageSystem());
 		addBehaviour(new PriceResponder());
@@ -50,8 +54,8 @@ public class MarketAgent extends Agent
 				Action act = (Action) ce;
 				Order newOrder = (Order) act.getAction();
 				
-				//System.out.println("~~~buy~~~ " + buySideOrder);
-				//System.out.println("~~~sell~~~ " + sellSideOrder);
+				System.out.println("~~~buy~~~ " + buySideOrders);
+				System.out.println("~~~sell~~~ " + sellSideOrders);
 				
 				if(orderRequestMsg.getPerformative() == ACLMessage.REQUEST)
 				{	
@@ -59,6 +63,7 @@ public class MarketAgent extends Agent
 					{
 						buySideOrders.add(newOrder);
 						BuySideOrderMatch buySideMatch = new BuySideOrderMatch();
+						
 						buySideMatch.setOrderbook(buySideOrders, sellSideOrders);
 						ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
 						tempBuyOrder.addAll(buySideMatch.matchBuyOrder());
@@ -110,11 +115,10 @@ public class MarketAgent extends Agent
 					else if (newOrder.getSide() == 2)
 					{
 						sellSideOrders.add(newOrder);
-						SellSideOrderMatch sellOrderMatch = new SellSideOrderMatch();
-						sellOrderMatch.setOrderbook(sellSideOrders, buySideOrders);
-						
+						SellSideOrderMatch sellSideMatch = new SellSideOrderMatch();
+						sellSideMatch.setOrderbook(sellSideOrders, buySideOrders);					
 						ArrayList<Order> tempSellOrder = new ArrayList<Order>();
-						tempSellOrder.addAll(sellOrderMatch.matchSellOrder());
+						tempSellOrder.addAll(sellSideMatch.matchSellOrder());
 						
 						if(tempSellOrder != null)
 						{
