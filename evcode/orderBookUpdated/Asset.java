@@ -1,4 +1,4 @@
-package orderBookUpdated29_9_1;
+package orderBookUpdated50;
 
 import java.util.ArrayList;
 
@@ -50,37 +50,36 @@ public class Asset
 		return assetInterest;
 	}
 	
-	public void updateAsset(Order order)
+	public boolean isInAssetList(ArrayList<Asset> assetList)
 	{
-		if(order.getSide() == 1)
+		for(int i = 0; i < assetList.size(); i++)
 		{
-			this.setAssetSymbol(order.getSymbol());
-			this.setAssetCost((this.getAssetCost()*this.getAssetVolume() + order.getDealingPrice()*order.getVolume())/(this.getAssetVolume() + order.getVolume()));
-			this.setAssetVolume(this.getAssetVolume() + order.getVolume());
-			//this.setProfit(this.getTotalVolume()*this.getCost() - this.getTotalVolume()*currentPrice);
+			if(this.getAssetSymbol().equals(assetList.get(i).getAssetSymbol()))
+			{
+				return true;
+			}
 		}
-		else
-			this.setAssetSymbol(order.getSymbol());
-		    this.setAssetCost((this.getAssetCost()*this.getAssetVolume() - order.getPrice()*order.getVolume())/(this.getAssetVolume() - order.getVolume()));
-		    this.setAssetVolume(this.getAssetVolume() - order.getVolume());
+		return false;
 	}
 
-	public void updateAssetList(ArrayList<Asset> assetList, Order order)
+	public void updateAssetList(ArrayList<Asset> assetList)
 	{
-		if(assetList != null)
+		if(this.isInAssetList(assetList))
 		{
 			int i = 0;
 			while(i < assetList.size())
 			{
 				if(this.getAssetSymbol().equals(assetList.get(i).getAssetSymbol()))
 				{
-					assetList.get(i).updateAsset(order);
+					assetList.set(i, this);
 				}
 				i++;
 			}
 		}
 		else
+		{
 			assetList.add(this);
+		}
 	}
 	
 	public String toString()

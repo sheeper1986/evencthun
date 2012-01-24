@@ -1,4 +1,4 @@
-package orderBookUpdated29_9_1;
+package orderBookUpdated50;
 
 import java.util.*;
 
@@ -21,24 +21,25 @@ import jade.lang.acl.MessageTemplate;
 
 public class MarketAgent extends Agent
 {
+	public static final AID marketAID = new AID("MarketAgent", AID.ISLOCALNAME);
+	public static final Ontology ontology = OrderBookOntology.getInstance();
+	public static final Codec codec = new SLCodec();
 	private PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
 	private PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
-	private Codec codec = new SLCodec();
-	private Ontology ontology = OrderBookOntology.getInstance();
-	private double currentPrice;
+	//public static double currentPrice;
 	
 	protected void setup()
 	{
-		System.out.println("This is updated29_9_1 " + getAID().getName());
+		System.out.println("This is updated50 " + getAID().getName());
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 		
 		InitializeOrder io = new InitializeOrder();
-		io.initializeBuyOrder(buySideOrders, 10);
-		io.initializeSellOrder(sellSideOrders, 10);
-		
+		io.initializeBuyOrder(buySideOrders, sellSideOrders, 10);
+		System.out.println("~~~buy~~~ " + buySideOrders);
+		System.out.println("~~~sell~~~ " + sellSideOrders);
+		addBehaviour(new InitOrderbookResponder());
 		addBehaviour(new OrderManageSystem());
-		addBehaviour(new PriceResponder());
 	}
 	
 	private class OrderManageSystem extends CyclicBehaviour
@@ -46,38 +47,36 @@ public class MarketAgent extends Agent
 		public void action()
 		{
 			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName())); 
-			ACLMessage orderRequestMsg = blockingReceive(mt);
-			try
+			ACLMessage orderRequestMsg = receive(mt);
+			if(orderRequestMsg != null)
 			{
-				ContentElement ce = null;
-				ce = getContentManager().extractContent(orderRequestMsg);	
-				Action act = (Action) ce;
-				Order newOrder = (Order) act.getAction();
-				
-				System.out.println("~~~buy~~~ " + buySideOrders);
-				System.out.println("~~~sell~~~ " + sellSideOrders);
-				
-				if(orderRequestMsg.getPerformative() == ACLMessage.REQUEST)
-				{	
-					if(newOrder.getSide() == 1)
-					{
-						buySideOrders.add(newOrder);
-						BuySideOrderMatch buySideMatch = new BuySideOrderMatch();
-						
-						buySideMatch.setOrderbook(buySideOrders, sellSideOrders);
-						ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
-						tempBuyOrder.addAll(buySideMatch.matchBuyOrder());
-
-						if(tempBuyOrder != null)
+				try
+				{
+					ContentElement ce = null;
+					ce = getContentManager().extractContent(orderRequestMsg);	
+					Action act = (Action) ce;
+					Order newOrder = (Order) act.getAction();
+					
+					System.out.println("~~~buy~~~ " + buySideOrders);
+					System.out.println("~~~sell~~~ " + sellSideOrders);
+					
+					if(orderRequestMsg.getPerformative() == ACLMessage.CFP)
+					{	
+						if(newOrder.getSide() == 1)
 						{
+							buySideOrders.add(newOrder);
+							LimitOrderBook orderbook = new LimitOrderBook();
+							ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
+							tempBuyOrder.addAll(orderbook.matchMechanism(buySideOrders,sellSideOrders));
+
 							int i = 0;
 							while(i < tempBuyOrder.size())
 							{
 								if(tempBuyOrder.get(i).getStatus() == 1)
 								{
-									currentPrice = tempBuyOrder.get(i).getPrice();
+									//currentPrice = tempBuyOrder.get(i).getDealingPrice();
 									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);		
+									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);		
 									//replyOrderMsg.setPerformative(ACLMessage.INFORM);
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -87,9 +86,9 @@ public class MarketAgent extends Agent
 								}
 								else if(tempBuyOrder.get(i).getStatus() == 2)
 								{
-									currentPrice = tempBuyOrder.get(i).getPrice();
+									//currentPrice = tempBuyOrder.get(i).getDealingPrice();
 									Action action = new Action(orderRequestMsg.getSender(),tempBuyOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.PROPOSE);
+									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
 									//replyOrderMsg.setPerformative(ACLMessage.PROPOSE);
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -111,25 +110,23 @@ public class MarketAgent extends Agent
 								i++;
 							}
 						}
-					}
-					else if (newOrder.getSide() == 2)
-					{
-						sellSideOrders.add(newOrder);
-						SellSideOrderMatch sellSideMatch = new SellSideOrderMatch();
-						sellSideMatch.setOrderbook(sellSideOrders, buySideOrders);					
-						ArrayList<Order> tempSellOrder = new ArrayList<Order>();
-						tempSellOrder.addAll(sellSideMatch.matchSellOrder());
-						
-						if(tempSellOrder != null)
+						else if (newOrder.getSide() == 2)
 						{
+							sellSideOrders.add(newOrder);
+							LimitOrderBook orderbook = new LimitOrderBook();
+							//orderbook.setBuySideOrderbook(buySideOrders);
+							//orderbook.setSellSideOrderbook(sellSideOrders);				
+							ArrayList<Order> tempSellOrder = new ArrayList<Order>();
+							tempSellOrder.addAll(orderbook.matchMechanism(buySideOrders, sellSideOrders));
+
 							int i = 0;
 							while(i < tempSellOrder.size())
 							{
 								if(tempSellOrder.get(i).getStatus() == 1)
 								{
-									currentPrice = tempSellOrder.get(i).getPrice();
+									//currentPrice = tempSellOrder.get(i).getDealingPrice();
 									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 									//replyOrderMsg.setPerformative(ACLMessage.INFORM);
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -139,9 +136,9 @@ public class MarketAgent extends Agent
 								}
 								else if(tempSellOrder.get(i).getStatus() == 2)
 								{
-									currentPrice = tempSellOrder.get(i).getPrice();
+									//currentPrice = tempSellOrder.get(i).getDealingPrice();
 									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.PROPOSE);
+									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
 									//replyOrderMsg.setPerformative(ACLMessage.PROPOSE);
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -164,52 +161,76 @@ public class MarketAgent extends Agent
 							}
 						}
 					}
-				}
-				else if(orderRequestMsg.getPerformative() == ACLMessage.CANCEL)
-				{
-					if(newOrder.getSide() == 1)
-			        {
-						newOrder.updateQueue(buySideOrders);
-			        }
-					else
+					else if(orderRequestMsg.getPerformative() == ACLMessage.CANCEL)
 					{
-						newOrder.updateQueue(sellSideOrders);
+						if(newOrder.getSide() == 1)
+				        {
+							newOrder.updateQueue(buySideOrders);
+				        }
+						else
+						{
+							newOrder.updateQueue(sellSideOrders);
+						}
+						newOrder.setStatus(4);
+						//ACLMessage replyCancelMsg = orderRequestMsg.createReply();
+						Action action = new Action(orderRequestMsg.getSender(),newOrder);
+						ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
+						//replyCancelMsg.setPerformative(ACLMessage.CONFIRM);
+						replyCancelMsg.setOntology(ontology.getName());
+						replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+						replyCancelMsg.addReceiver(orderRequestMsg.getSender());
+						myAgent.getContentManager().fillContent(replyCancelMsg, action);
+				        myAgent.send(replyCancelMsg);
 					}
-					newOrder.setStatus(4);
-					//ACLMessage replyCancelMsg = orderRequestMsg.createReply();
-					Action action = new Action(orderRequestMsg.getSender(),newOrder);
-					ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
-					//replyCancelMsg.setPerformative(ACLMessage.CONFIRM);
-					replyCancelMsg.setOntology(ontology.getName());
-					replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-					replyCancelMsg.addReceiver(orderRequestMsg.getSender());
-					myAgent.getContentManager().fillContent(replyCancelMsg, action);
-			        myAgent.send(replyCancelMsg);
+				}
+				catch(CodecException ce){
+					ce.printStackTrace();
+				}
+				catch(OntologyException oe){
+					oe.printStackTrace();
 				}
 			}
-			catch(CodecException ce){
-				ce.printStackTrace();
-			}
-			catch(OntologyException oe){
-				oe.printStackTrace();
-			}
+			else
+				block();
 		}
 	}
 	
-	private class PriceResponder extends CyclicBehaviour
+	private class InitOrderbookResponder extends CyclicBehaviour
 	{
 		public void action()
 		{
-			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), MessageTemplate.MatchConversationId("CheckPrice"));
-			ACLMessage priceMsg = receive(pt);
-			if(priceMsg != null)
+			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), MessageTemplate.MatchConversationId("InitializeOrders"));
+			ACLMessage initOrderbookMsg = receive(pt);
+
+			if(initOrderbookMsg != null)
 			{
-				ACLMessage replyPriceMsg = new ACLMessage(ACLMessage.INFORM);
-				//replyPriceMsg.setPerformative(ACLMessage.INFORM);
-				replyPriceMsg.setConversationId("PriceInform");
-				replyPriceMsg.setContent(String.valueOf(currentPrice));
-				replyPriceMsg.addReceiver(priceMsg.getSender());
-				myAgent.send(replyPriceMsg);
+				System.out.println(initOrderbookMsg);
+				ArrayList<Order> pendingInitList = new ArrayList<Order>();
+				pendingInitList.addAll(buySideOrders);
+				pendingInitList.addAll(sellSideOrders);
+				
+				int i = 0;
+				while(i < pendingInitList.size())
+				{
+					try
+					{
+						Action action = new Action(initOrderbookMsg.getSender(), pendingInitList.get(i));
+					    ACLMessage replyInitMsg = new ACLMessage(ACLMessage.AGREE);
+					    //replyInitMsg.setConversationId("InitializeOrders");
+					    replyInitMsg.setOntology(ontology.getName());
+					    replyInitMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+					    replyInitMsg.addReceiver(initOrderbookMsg.getSender());
+					    myAgent.getContentManager().fillContent(replyInitMsg, action);
+					    myAgent.send(replyInitMsg);
+					    i++;
+					}
+					catch (CodecException e) {
+						e.printStackTrace();
+						} 
+					catch (OntologyException e) {
+						e.printStackTrace();
+						}
+				}
 			}
 			else
 				block();

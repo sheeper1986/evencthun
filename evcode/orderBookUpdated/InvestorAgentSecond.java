@@ -21,16 +21,16 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.*;
 
-public class InvestorAgent extends Agent
+public class InvestorAgentSecond extends Agent
 {
 	private Strategy tradeStrategy = new Strategy();
-	public static ArrayList<Order> pendingOrderList = new ArrayList<Order>();
+	public static ArrayList<Order> pendingOrderListII = new ArrayList<Order>();
 	//private ArrayList<Asset> assetList = new ArrayList<Asset>();
 	//private Asset asset = new Asset();
 	//private double fundAvailable;
 	//private int id = 0;
-	private LinkedList<Order> buySideOrders = new LinkedList<Order>();
-	private LinkedList<Order> sellSideOrders = new LinkedList<Order>();
+	private LinkedList<Order> buySideOrdersII = new LinkedList<Order>();
+	private LinkedList<Order> sellSideOrdersII = new LinkedList<Order>();
 	
 	protected void setup()
 	{
@@ -42,7 +42,7 @@ public class InvestorAgent extends Agent
 		//pb.addSubBehaviour();
 		addBehaviour(new InitOrderbookRequest());
 		addBehaviour(new ProcessedOrderManager());
-		addBehaviour(new RandomTradingBehaviour(this, 2000));
+		addBehaviour(new RandomTradingBehaviourII(this, 2000));
 		
 		//addBehaviour(new PriceChecker(this, 1000));
 		//addBehaviour(new AutoCancel());
@@ -81,44 +81,44 @@ public class InvestorAgent extends Agent
 					{
 						if(processedOrder.isBuySide())
 						{
-							buySideOrders.add(processedOrder);
-							Collections.sort(buySideOrders);
+							buySideOrdersII.add(processedOrder);
+							Collections.sort(buySideOrdersII);
 						}
 						else
 						{
-							sellSideOrders.add(processedOrder);
-							Collections.sort(sellSideOrders);
+							sellSideOrdersII.add(processedOrder);
+							Collections.sort(sellSideOrdersII);
 						}
-						System.out.println("LocalBuy~~~~~~ " + buySideOrders);
-						System.out.println("LocalSell~~~~~~ " + sellSideOrders);
+						System.out.println("LocalBuy~~~~~~ II" + buySideOrdersII);
+						System.out.println("LocalSell~~~~~~II " + sellSideOrdersII);
 					}
 					else if(processedOrderMsg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
 					{
 						System.out.println("Filled !" + processedOrder);
-						processedOrder.updatePendingOrderList(pendingOrderList);
+						processedOrder.updatePendingOrderList(pendingOrderListII);
 						//asset.updateAssetList(assetList, processedOrder);
 					}
 					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 					{
 						System.out.println("Great PartlyFilled !" + processedOrder);
-						processedOrder.updatePendingOrderList(pendingOrderList);
+						processedOrder.updatePendingOrderList(pendingOrderListII);
 						//asset.updateAssetList(assetList, processedOrder);
 					}
 					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 					{
 						System.out.println("Rejected !" + processedOrder);
-						processedOrder.updatePendingOrderList(pendingOrderList);
+						processedOrder.updatePendingOrderList(pendingOrderListII);
 					}
 					
 					else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
 					{
 						System.out.println("Cancel Successful !" + processedOrder);
-						processedOrder.updatePendingOrderList(pendingOrderList);
+						processedOrder.updatePendingOrderList(pendingOrderListII);
 					}
 					
-					System.out.println("Updated Pending List " + pendingOrderList);
+					System.out.println("Updated Pending List II" + pendingOrderListII);
 					//System.out.println("Market Price: " + MarketAgent.currentPrice);
 					//System.out.println("Updated Asset List " + assetList);
 				}	
