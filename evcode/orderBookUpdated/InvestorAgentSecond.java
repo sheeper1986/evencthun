@@ -1,4 +1,4 @@
-package orderBookUpdated50;
+package orderBookUpdated50_2;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -34,7 +34,7 @@ public class InvestorAgentSecond extends Agent
 	
 	protected void setup()
 	{
-		getContentManager().registerLanguage(MarketAgent.codec, FIPANames.ContentLanguage.FIPA_SL0);
+		getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(MarketAgent.ontology);
 		
 		System.out.println("This is updated50 " + getAID().getName());

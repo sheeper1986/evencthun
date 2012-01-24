@@ -1,4 +1,4 @@
-package orderBookUpdated50;
+package orderBookUpdated50_2;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -14,6 +14,7 @@ import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
 import jade.core.behaviours.ParallelBehaviour;
+import jade.core.behaviours.SequentialBehaviour;
 import jade.core.behaviours.TickerBehaviour;
 import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
@@ -34,15 +35,27 @@ public class InvestorAgent extends Agent
 	
 	protected void setup()
 	{
-		getContentManager().registerLanguage(MarketAgent.codec, FIPANames.ContentLanguage.FIPA_SL0);
+		getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
+		getContentManager().registerLanguage(MarketAgent.codecII, FIPANames.ContentLanguage.FIPA_SL1);
 		getContentManager().registerOntology(MarketAgent.ontology);
 		
-		System.out.println("This is updated50 " + getAID().getName());
+		System.out.println("This is updated50_2 " + getAID().getName());
 		//ParallelBehaviour pb = new ParallelBehaviour(this,ParallelBehaviour.WHEN_ANY);
 		//pb.addSubBehaviour();
-		addBehaviour(new InitOrderbookRequest());
+		SequentialBehaviour createInitLocalOrderbook = new SequentialBehaviour();
+		createInitLocalOrderbook.addSubBehaviour(new InitOrderbookRequest());
+		createInitLocalOrderbook.addSubBehaviour(new LocalOrderbook());
+		Collections.sort(buySideOrders);
+		Collections.sort(sellSideOrders);
+		System.out.println("LocalBuy~~~~~~ " + buySideOrders.size());
+		System.out.println("LocalSell~~~~~~ " + sellSideOrders.size());
+		createInitLocalOrderbook.addSubBehaviour(new RandomTradingBehaviour(this,1000));
+		addBehaviour(createInitLocalOrderbook);
 		addBehaviour(new ProcessedOrderManager());
-		addBehaviour(new RandomTradingBehaviour(this, 2000));
+		//addBehaviour(createInitLocalOrderbook);
+		
+		
+		//addBehaviour(new RandomTradingBehaviour(this, 1000));
 		
 		//addBehaviour(new PriceChecker(this, 1000));
 		//addBehaviour(new AutoCancel());
@@ -62,6 +75,58 @@ public class InvestorAgent extends Agent
 		}
 		
 	}
+	private class LocalOrderbook extends Behaviour
+	{
+
+		int i = 1;
+		public void action() {
+			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL1), MessageTemplate.MatchOntology(MarketAgent.ontology.getName())); 
+			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
+			ACLMessage LocalOrderMsg = receive(mt);
+		
+			if(LocalOrderMsg != null)
+			{
+				try
+				{
+					ContentElement ce = null;
+					ce = getContentManager().extractContent(LocalOrderMsg);	
+				    Action act = (Action) ce;
+				    Order localOrderOrder = (Order) act.getAction();
+				    if(LocalOrderMsg.getPerformative() == ACLMessage.AGREE)
+				    {
+				    	if(localOrderOrder.isBuySide())
+				    	{
+				    		buySideOrders.add(localOrderOrder);
+						
+					    }
+					    else
+					    {
+					    	sellSideOrders.add(localOrderOrder);
+					    }
+						System.out.println("LocalBuy~~~~~~ " + buySideOrders.size());
+						System.out.println("LocalSell~~~~~~ " + sellSideOrders.size());
+					}
+				    i++;
+				}	
+				catch(CodecException ce){
+					ce.printStackTrace();
+				}
+				catch(OntologyException oe){
+					oe.printStackTrace();
+				}
+			}
+		}
+
+		//@Override
+		public boolean done() {
+			if(i < 20001)
+			{
+				return false;
+			}
+			return true;
+		}
+		
+	}
 	private class ProcessedOrderManager extends CyclicBehaviour
 	{
 		public void action()
@@ -71,28 +136,28 @@ public class InvestorAgent extends Agent
 			ACLMessage processedOrderMsg = receive(mt);
 		
 			if(processedOrderMsg!=null){
-				try
+			try
+			{
+				ContentElement ce = null;
+				ce = getContentManager().extractContent(processedOrderMsg);	
+				Action act = (Action) ce;
+				Order processedOrder = (Order) act.getAction();
+				/*if(processedOrderMsg.getPerformative() == ACLMessage.AGREE)
 				{
-					ContentElement ce = null;
-					ce = getContentManager().extractContent(processedOrderMsg);	
-					Action act = (Action) ce;
-					Order processedOrder = (Order) act.getAction();
-					if(processedOrderMsg.getPerformative() == ACLMessage.AGREE)
+					if(processedOrder.isBuySide())
 					{
-						if(processedOrder.isBuySide())
-						{
-							buySideOrders.add(processedOrder);
-							Collections.sort(buySideOrders);
-						}
-						else
-						{
-							sellSideOrders.add(processedOrder);
-							Collections.sort(sellSideOrders);
-						}
-						System.out.println("LocalBuy~~~~~~ " + buySideOrders);
-						System.out.println("LocalSell~~~~~~ " + sellSideOrders);
+						buySideOrders.add(processedOrder);
+						Collections.sort(buySideOrders);
 					}
-					else if(processedOrderMsg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
+					else
+					{
+						sellSideOrders.add(processedOrder);
+						Collections.sort(sellSideOrders);
+					}
+						System.out.println("LocalBuy~~~~~~ " + buySideOrders.size());
+						System.out.println("LocalSell~~~~~~ " + sellSideOrders.size());
+				}*/
+					if(processedOrderMsg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
 					{
 						System.out.println("Filled !" + processedOrder);
 						processedOrder.updatePendingOrderList(pendingOrderList);

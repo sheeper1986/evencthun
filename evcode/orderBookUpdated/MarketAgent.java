@@ -1,4 +1,4 @@
-package orderBookUpdated50;
+package orderBookUpdated50_2;
 
 import java.util.*;
 
@@ -23,21 +23,23 @@ public class MarketAgent extends Agent
 {
 	public static final AID marketAID = new AID("MarketAgent", AID.ISLOCALNAME);
 	public static final Ontology ontology = OrderBookOntology.getInstance();
-	public static final Codec codec = new SLCodec();
+	public static final Codec codecI = new SLCodec();
+	public static final Codec codecII = new SLCodec();
 	private PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
 	private PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
 	//public static double currentPrice;
 	
 	protected void setup()
 	{
-		System.out.println("This is updated50 " + getAID().getName());
-		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
+		System.out.println("This is updated50_1 " + getAID().getName());
+		getContentManager().registerLanguage(codecI, FIPANames.ContentLanguage.FIPA_SL0);
+		getContentManager().registerLanguage(codecII, FIPANames.ContentLanguage.FIPA_SL1);
 		getContentManager().registerOntology(ontology);
 		
 		InitializeOrder io = new InitializeOrder();
-		io.initializeBuyOrder(buySideOrders, sellSideOrders, 10);
-		System.out.println("~~~buy~~~ " + buySideOrders);
-		System.out.println("~~~sell~~~ " + sellSideOrders);
+		io.initializeBuyOrder(buySideOrders, sellSideOrders, 10000);
+		System.out.println("~~~buy~~~ " + buySideOrders.size());
+		System.out.println("~~~sell~~~ " + sellSideOrders.size());
 		addBehaviour(new InitOrderbookResponder());
 		addBehaviour(new OrderManageSystem());
 	}
@@ -57,8 +59,7 @@ public class MarketAgent extends Agent
 					Action act = (Action) ce;
 					Order newOrder = (Order) act.getAction();
 					
-					System.out.println("~~~buy~~~ " + buySideOrders);
-					System.out.println("~~~sell~~~ " + sellSideOrders);
+
 					
 					if(orderRequestMsg.getPerformative() == ACLMessage.CFP)
 					{	
@@ -78,6 +79,7 @@ public class MarketAgent extends Agent
 									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
 									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);		
 									//replyOrderMsg.setPerformative(ACLMessage.INFORM);
+									//replyOrderMsg.setReplyWith("ProcessedOrders");
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
@@ -90,6 +92,7 @@ public class MarketAgent extends Agent
 									Action action = new Action(orderRequestMsg.getSender(),tempBuyOrder.get(i));
 									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
 									//replyOrderMsg.setPerformative(ACLMessage.PROPOSE);
+									//replyOrderMsg.setReplyWith("ProcessedOrders");
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
@@ -101,6 +104,7 @@ public class MarketAgent extends Agent
 									Action action = new Action(orderRequestMsg.getSender(),tempBuyOrder.get(i));
 									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
 									//replyOrderMsg.setPerformative(ACLMessage.REJECT_PROPOSAL);
+									//replyOrderMsg.setReplyWith("ProcessedOrders");
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
@@ -128,6 +132,7 @@ public class MarketAgent extends Agent
 									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
 									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
 									//replyOrderMsg.setPerformative(ACLMessage.INFORM);
+									//replyOrderMsg.setReplyWith("ProcessedOrders");
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
@@ -140,6 +145,7 @@ public class MarketAgent extends Agent
 									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
 									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
 									//replyOrderMsg.setPerformative(ACLMessage.PROPOSE);
+									//replyOrderMsg.setReplyWith("ProcessedOrders");
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
@@ -151,6 +157,7 @@ public class MarketAgent extends Agent
 									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
 									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
 									//replyOrderMsg.setPerformative(ACLMessage.REJECT_PROPOSAL);
+									//replyOrderMsg.setReplyWith("ProcessedOrders");
 									replyOrderMsg.setOntology(ontology.getName());
 									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
@@ -176,12 +183,15 @@ public class MarketAgent extends Agent
 						Action action = new Action(orderRequestMsg.getSender(),newOrder);
 						ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
 						//replyCancelMsg.setPerformative(ACLMessage.CONFIRM);
+						//replyCancelMsg.setReplyWith("ProcessedOrders");
 						replyCancelMsg.setOntology(ontology.getName());
 						replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 						replyCancelMsg.addReceiver(orderRequestMsg.getSender());
 						myAgent.getContentManager().fillContent(replyCancelMsg, action);
 				        myAgent.send(replyCancelMsg);
 					}
+					//System.out.println("~~~buy~~~ " + buySideOrders);
+					//System.out.println("~~~sell~~~ " + sellSideOrders);
 				}
 				catch(CodecException ce){
 					ce.printStackTrace();
@@ -216,9 +226,9 @@ public class MarketAgent extends Agent
 					{
 						Action action = new Action(initOrderbookMsg.getSender(), pendingInitList.get(i));
 					    ACLMessage replyInitMsg = new ACLMessage(ACLMessage.AGREE);
-					    //replyInitMsg.setConversationId("InitializeOrders");
+					    //replyInitMsg.setReplyWith("InitializeOrders");
 					    replyInitMsg.setOntology(ontology.getName());
-					    replyInitMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+					    replyInitMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL1);
 					    replyInitMsg.addReceiver(initOrderbookMsg.getSender());
 					    myAgent.getContentManager().fillContent(replyInitMsg, action);
 					    myAgent.send(replyInitMsg);
