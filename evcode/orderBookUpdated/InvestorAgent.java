@@ -1,4 +1,4 @@
-package orderBookUpdated50_6;
+package orderBookUpdated50_7;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -28,20 +28,19 @@ import java.util.*;
 
 public class InvestorAgent extends Agent
 {
-	//private Strategy tradeStrategy = new Strategy();
+	private int id = 0;
 	private ArrayList<Order> pendingOrderList = new ArrayList<Order>();
+	private LinkedList<Order> buySideOrders = new LinkedList<Order>();
+	private LinkedList<Order> sellSideOrders = new LinkedList<Order>();
 	//private ArrayList<Asset> assetList = new ArrayList<Asset>();
 	//private Asset asset = new Asset();
 	//private double fundAvailable;
-	private int id = 0;
-	private LinkedList<Order> buySideOrders = new LinkedList<Order>();
-	private LinkedList<Order> sellSideOrders = new LinkedList<Order>();
-	
+	//private Strategy tradeStrategy = new Strategy();
 	protected void setup()
 	{
 		try 
 		{
-			System.out.println("This is updated50_6 " + getAID().getName());
+			System.out.println("This is updated50_7 " + getAID().getName());
 			
 			ServiceDescription sd = new ServiceDescription();
             sd.setType( "NoisyTrader" );
@@ -190,8 +189,7 @@ public class InvestorAgent extends Agent
 			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(MarketAgent.ontology.getName())); 
 			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
 			ACLMessage processedOrderMsg = receive(mt);
-			//System.out.println("LocalBuy~~~~~~ " + buySideOrders.size());
-			//System.out.println("LocalSell~~~~~~ " + sellSideOrders.size());
+
 			if(processedOrderMsg != null){
 			try
 			{
@@ -200,69 +198,41 @@ public class InvestorAgent extends Agent
 				Action act = (Action) ce;
 				Order processedOrder = (Order) act.getAction();
 				
-				if(processedOrderMsg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
+				if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 				{
-					System.out.println("Filled !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
+					if(processedOrder.getStatus() == 1)
+					{
+						System.out.println("Filled !" + processedOrder);
+					}
+					else if(processedOrder.getStatus() == 2)
+					{
+						System.out.println("Great PartlyFilled !" + processedOrder);
+					}
+					else if(processedOrder.getStatus() == 3)
+					{
+						System.out.println("Rejected !" + processedOrder);
+					}
 					//asset.updateAssetList(assetList, processedOrder);
 				}
-					
-				else if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
-				{
-					System.out.println("Great PartlyFilled !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
-						//asset.updateAssetList(assetList, processedOrder);
-				}
-					
-				else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
-				{
-					System.out.println("Rejected !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
-				}
-					
+
 				else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
 				{
 					System.out.println("Cancel Successful !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
 				}
-					
-					System.out.println("Updated Pending List " + pendingOrderList);
-					//System.out.println("Market Price: " + MarketAgent.currentPrice);
-					//System.out.println("Updated Asset List " + assetList);
-				}	
-				catch(CodecException ce){
-					ce.printStackTrace();
+				processedOrder.updatePendingOrderList(pendingOrderList);
+				System.out.println("Updated Pending List " + pendingOrderList);
+			}	
+			catch(CodecException ce){
+				ce.printStackTrace();
 				}
-				catch(OntologyException oe){
-					oe.printStackTrace();
+			catch(OntologyException oe){
+				oe.printStackTrace();
 				}
 			}
 			else
 				block();
 			}
 		}
-
-	/*private class PriceChecker extends TickerBehaviour
-	{
-		public PriceChecker(Agent a, long period) 
-		{
-			super(a, period);
-		}
-
-		protected void onTick()
-		{
-			try
-			{
-				ACLMessage checkPriceMsg = new ACLMessage(ACLMessage.REQUEST);
-				checkPriceMsg.setConversationId("CheckPrice");
-				checkPriceMsg.addReceiver(MarketAgent.marketAID);
-				myAgent.send(checkPriceMsg);	
-			}
-			catch(Exception ex){
-				System.out.println(ex);
-			}
-		}
-	}*/
 	
 	/*private class AutoCancel extends CyclicBehaviour
 	{

@@ -1,4 +1,4 @@
-package orderBookUpdated50_6;
+package orderBookUpdated50_7;
 
 import java.util.*;
 
@@ -39,7 +39,7 @@ public class MarketAgent extends Agent
 	{
 		try 
 		{
-			System.out.println("This is updated50_6 " + getAID().getName());
+			System.out.println("This is updated50_7 " + getAID().getName());
            
 			DFAgentDescription dfd = new DFAgentDescription();
 			dfd.setName(getAID());
@@ -105,137 +105,57 @@ public class MarketAgent extends Agent
 					ContentElement ce = null;
 					ce = getContentManager().extractContent(orderRequestMsg);	
 					Action act = (Action) ce;
-					Order newOrder = (Order) act.getAction();
+					Order placedOrder = (Order) act.getAction();
 					
 					if(orderRequestMsg.getPerformative() == ACLMessage.CFP)
 					{	
-						if(newOrder.getSide() == 1)
+						if(placedOrder.getSide() == 1)
 						{
-							buySideOrders.add(newOrder);
-							ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
-							LimitOrderBook orderbook = new LimitOrderBook();
-							tempBuyOrder.addAll(orderbook.matchMechanism(buySideOrders,sellSideOrders));
-
-							int i = 0;
-							while(i < tempBuyOrder.size())
-							{
-								if(tempBuyOrder.get(i).getStatus() == 1)
-								{
-									//currentPrice = tempBuyOrder.get(i).getDealingPrice();
-									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);		
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									myAgent.send(replyOrderMsg);
-								}
-								else if(tempBuyOrder.get(i).getStatus() == 2)
-								{
-									//currentPrice = tempBuyOrder.get(i).getDealingPrice();
-									Action action = new Action(orderRequestMsg.getSender(),tempBuyOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-									//replyOrderMsg.setPerformative(ACLMessage.PROPOSE);
-									//replyOrderMsg.setReplyWith("ProcessedOrders");
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									myAgent.send(replyOrderMsg);
-								}
-								else if(tempBuyOrder.get(i).getStatus() == 3)
-								{
-									Action action = new Action(orderRequestMsg.getSender(),tempBuyOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
-									//replyOrderMsg.setPerformative(ACLMessage.REJECT_PROPOSAL);
-									//replyOrderMsg.setReplyWith("ProcessedOrders");
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									myAgent.send(replyOrderMsg);
-								}
-								i++;
-							}
+							buySideOrders.add(placedOrder);
 						}
-						else if (newOrder.getSide() == 2)
+						else
 						{
-							sellSideOrders.add(newOrder);
-							LimitOrderBook orderbook = new LimitOrderBook();
-							//orderbook.setBuySideOrderbook(buySideOrders);
-							//orderbook.setSellSideOrderbook(sellSideOrders);				
-							ArrayList<Order> tempSellOrder = new ArrayList<Order>();
-							tempSellOrder.addAll(orderbook.matchMechanism(buySideOrders, sellSideOrders));
+							sellSideOrders.add(placedOrder);
+						}
+						
+						ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
+						LimitOrderBook orderbook = new LimitOrderBook();
+						tempBuyOrder.addAll(orderbook.matchMechanism(buySideOrders,sellSideOrders));
 
-							int i = 0;
-							while(i < tempSellOrder.size())
-							{
-								if(tempSellOrder.get(i).getStatus() == 1)
-								{
-									//currentPrice = tempSellOrder.get(i).getDealingPrice();
-									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.ACCEPT_PROPOSAL);
-									//replyOrderMsg.setPerformative(ACLMessage.INFORM);
-									//replyOrderMsg.setReplyWith("ProcessedOrders");
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									myAgent.send(replyOrderMsg);
-								}
-								else if(tempSellOrder.get(i).getStatus() == 2)
-								{
-									//currentPrice = tempSellOrder.get(i).getDealingPrice();
-									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-									//replyOrderMsg.setPerformative(ACLMessage.PROPOSE);
-									//replyOrderMsg.setReplyWith("ProcessedOrders");
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									myAgent.send(replyOrderMsg);
-								}
-								else if(tempSellOrder.get(i).getStatus() == 3)
-								{
-									Action action = new Action(orderRequestMsg.getSender(),tempSellOrder.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.REJECT_PROPOSAL);
-									//replyOrderMsg.setPerformative(ACLMessage.REJECT_PROPOSAL);
-									//replyOrderMsg.setReplyWith("ProcessedOrders");
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-									replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									myAgent.send(replyOrderMsg);
-								}
-								i++;
-							}
+						int i = 0;
+						while(i < tempBuyOrder.size())
+						{
+							//currentPrice = tempBuyOrder.get(i).getDealingPrice();
+							Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
+							ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+							replyOrderMsg.setOntology(ontology.getName());
+							replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							replyOrderMsg.addReceiver(orderRequestMsg.getSender());
+							myAgent.getContentManager().fillContent(replyOrderMsg, action);
+							myAgent.send(replyOrderMsg);
+							i++;
 						}
 					}
 					else if(orderRequestMsg.getPerformative() == ACLMessage.CANCEL)
 					{
-						if(newOrder.getSide() == 1)
+						placedOrder.setStatus(4);
+						
+						if(placedOrder.getSide() == 1)
 				        {
-							newOrder.cancelFrom(buySideOrders);
+							placedOrder.cancelFrom(buySideOrders);
 				        }
 						else
 						{
-							newOrder.cancelFrom(sellSideOrders);
+							placedOrder.cancelFrom(sellSideOrders);
 						}
-						newOrder.setStatus(4);
-						//ACLMessage replyCancelMsg = orderRequestMsg.createReply();
-						Action action = new Action(orderRequestMsg.getSender(),newOrder);
+						Action action = new Action(orderRequestMsg.getSender(),placedOrder);
 						ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
-						//replyCancelMsg.setPerformative(ACLMessage.CONFIRM);
-						//replyCancelMsg.setReplyWith("ProcessedOrders");
 						replyCancelMsg.setOntology(ontology.getName());
 						replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 						replyCancelMsg.addReceiver(orderRequestMsg.getSender());
 						myAgent.getContentManager().fillContent(replyCancelMsg, action);
 				        myAgent.send(replyCancelMsg);
 					}
-					//System.out.println("~~~buy~~~ " + buySideOrders);
-					//System.out.println("~~~sell~~~ " + sellSideOrders);
 				}
 				catch(CodecException ce){
 					ce.printStackTrace();
