@@ -1,4 +1,4 @@
-package orderBookUpdated50_2;
+package orderBookUpdated50_6;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -287,7 +287,7 @@ public class Order implements AgentAction,Comparable<Order>
 		}		
 	}
 	
-	public void updateQueue(PriorityQueue<Order> oBList)
+	public void cancelFrom(PriorityQueue<Order> oBList)
 	{
 		Iterator<Order> it = oBList.iterator();
 		

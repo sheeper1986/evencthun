@@ -26,16 +26,16 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.*;
 
-public class InvestorAgent extends Agent
+public class InvestorAgentII extends Agent
 {
 	//private Strategy tradeStrategy = new Strategy();
-	private ArrayList<Order> pendingOrderList = new ArrayList<Order>();
+	private ArrayList<Order> pendingOrderListII = new ArrayList<Order>();
 	//private ArrayList<Asset> assetList = new ArrayList<Asset>();
 	//private Asset asset = new Asset();
 	//private double fundAvailable;
 	private int id = 0;
-	private LinkedList<Order> buySideOrders = new LinkedList<Order>();
-	private LinkedList<Order> sellSideOrders = new LinkedList<Order>();
+	private LinkedList<Order> buySideOrdersII = new LinkedList<Order>();
+	private LinkedList<Order> sellSideOrdersII = new LinkedList<Order>();
 	
 	protected void setup()
 	{
@@ -72,13 +72,13 @@ public class InvestorAgent extends Agent
 	{
 		public void action() 
 		{
-			buySideOrders.addAll(MarketAgent.buySideOrders);
-    		Collections.sort(buySideOrders);
-    		sellSideOrders.addAll(MarketAgent.sellSideOrders);
-    		Collections.sort(sellSideOrders);
+			buySideOrdersII.addAll(MarketAgent.buySideOrders);
+    		Collections.sort(buySideOrdersII);
+    		sellSideOrdersII.addAll(MarketAgent.sellSideOrders);
+    		Collections.sort(sellSideOrdersII);
     		
-    		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideOrders.size());
-    		System.out.println(getAID().getLocalName() + " LocalSellSellOrders: " + sellSideOrders.size());
+    		System.out.println(getAID().getLocalName() + " LocalBuyOrdersII: " + buySideOrdersII.size());
+    		System.out.println(getAID().getLocalName() + " LocalSellSellOrdersII: " + sellSideOrdersII.size());
     		
 			ACLMessage tradingRequestMsg = new ACLMessage(ACLMessage.REQUEST);
 			tradingRequestMsg.setConversationId("TradingRequest");
@@ -165,8 +165,8 @@ public class InvestorAgent extends Agent
 					}	
 				}
 				
-				pendingOrderList.add(newOrder);
-				System.out.println("Pending orders " + pendingOrderList);
+				pendingOrderListII.add(newOrder);
+				System.out.println("Pending ordersII " + pendingOrderListII);
 				
 				Action action = new Action(MarketAgent.marketAID, newOrder);
 				ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.CFP);
@@ -203,30 +203,30 @@ public class InvestorAgent extends Agent
 				if(processedOrderMsg.getPerformative() == ACLMessage.ACCEPT_PROPOSAL)
 				{
 					System.out.println("Filled !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
+					processedOrder.updatePendingOrderList(pendingOrderListII);
 					//asset.updateAssetList(assetList, processedOrder);
 				}
 					
 				else if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 				{
 					System.out.println("Great PartlyFilled !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
+					processedOrder.updatePendingOrderList(pendingOrderListII);
 						//asset.updateAssetList(assetList, processedOrder);
 				}
 					
 				else if(processedOrderMsg.getPerformative() == ACLMessage.REJECT_PROPOSAL)
 				{
 					System.out.println("Rejected !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
+					processedOrder.updatePendingOrderList(pendingOrderListII);
 				}
 					
 				else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
 				{
 					System.out.println("Cancel Successful !" + processedOrder);
-					processedOrder.updatePendingOrderList(pendingOrderList);
+					processedOrder.updatePendingOrderList(pendingOrderListII);
 				}
 					
-					System.out.println("Updated Pending List " + pendingOrderList);
+					System.out.println("Updated Pending ListII " + pendingOrderListII);
 					//System.out.println("Market Price: " + MarketAgent.currentPrice);
 					//System.out.println("Updated Asset List " + assetList);
 				}	
