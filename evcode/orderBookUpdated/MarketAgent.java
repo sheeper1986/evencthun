@@ -3,6 +3,7 @@ package orderBookUpdated50_7;
 import java.util.*;
 
 import eugene.market.ontology.field.Side;
+import examples.party.HostUIFrame;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -21,12 +22,12 @@ import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.wrapper.AgentController;
+import jade.wrapper.PlatformController;
 
 public class MarketAgent extends Agent
 {
 	public static final AID marketAID = new AID("MarketAgent", AID.ISLOCALNAME);
-	public static final AID investorI = new AID("Ev", AID.ISLOCALNAME);
-	public static final AID investorII = new AID("Peter", AID.ISLOCALNAME);
 	public static final Ontology ontology = OrderBookOntology.getInstance();
 	public static final Codec codecI = new SLCodec();
 	public static PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
@@ -37,13 +38,13 @@ public class MarketAgent extends Agent
 	
 	protected void setup()
 	{
-		try 
-		{
+		//try 
+		//{
 			System.out.println("This is updated50_7 " + getAID().getName());
            
-			DFAgentDescription dfd = new DFAgentDescription();
-			dfd.setName(getAID());
-			DFService.register(this, dfd);
+			//DFAgentDescription dfd = new DFAgentDescription();
+			//dfd.setName(getAID());
+			//DFService.register(this, dfd);
 			
 			getContentManager().registerLanguage(codecI, FIPANames.ContentLanguage.FIPA_SL0);
 			getContentManager().registerOntology(ontology);
@@ -56,10 +57,11 @@ public class MarketAgent extends Agent
 			
 			addBehaviour(new InitOrderbookResponder());
 			addBehaviour(new OrderMatchEngine());
-		} 
-		catch (FIPAException e) {
-			e.printStackTrace();
-		}
+		//} 
+		//catch (FIPAException e) {
+			//e.printStackTrace();
+		//}
+			this.startInvestors();
 	}
 	
 	private class InitOrderbookResponder extends CyclicBehaviour
@@ -79,11 +81,13 @@ public class MarketAgent extends Agent
                     if (investorCount == 2) 
                     {
                         System.out.println( "All investors are ready, now start......" );
-                        ACLMessage replyTradingRequest = new ACLMessage(ACLMessage.AGREE);
-                        replyTradingRequest.setConversationId("TradingPermission");
-                        replyTradingRequest.addReceiver(investorI);
-                        replyTradingRequest.addReceiver(investorII);
-                        myAgent.send(replyTradingRequest);
+                        for (Iterator it = investorList.iterator();  it.hasNext();) 
+						{
+                        	ACLMessage replyTradingRequest = new ACLMessage(ACLMessage.AGREE);
+                            replyTradingRequest.setConversationId("TradingPermission");
+                            replyTradingRequest.addReceiver((AID) it.next());
+							myAgent.send(replyTradingRequest);
+						}							
                     }
                 }
 			}
@@ -127,12 +131,16 @@ public class MarketAgent extends Agent
 						{
 							//currentPrice = tempBuyOrder.get(i).getDealingPrice();
 							Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
-							ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-							replyOrderMsg.setOntology(ontology.getName());
-							replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-							replyOrderMsg.addReceiver(orderRequestMsg.getSender());
-							myAgent.getContentManager().fillContent(replyOrderMsg, action);
-							myAgent.send(replyOrderMsg);
+													
+							for (Iterator it = investorList.iterator();  it.hasNext();) 
+							{
+								ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+								replyOrderMsg.setOntology(ontology.getName());
+								replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+								myAgent.getContentManager().fillContent(replyOrderMsg, action);
+								replyOrderMsg.addReceiver((AID) it.next());
+								myAgent.send(replyOrderMsg);
+							}							
 							i++;
 						}
 					}
@@ -149,12 +157,15 @@ public class MarketAgent extends Agent
 							placedOrder.cancelFrom(sellSideOrders);
 						}
 						Action action = new Action(orderRequestMsg.getSender(),placedOrder);
-						ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
-						replyCancelMsg.setOntology(ontology.getName());
-						replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-						replyCancelMsg.addReceiver(orderRequestMsg.getSender());
-						myAgent.getContentManager().fillContent(replyCancelMsg, action);
-				        myAgent.send(replyCancelMsg);
+						for (Iterator it = investorList.iterator();  it.hasNext();) 
+						{
+							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.INFORM);
+							replyCancelMsg.setOntology(ontology.getName());
+							replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							myAgent.getContentManager().fillContent(replyCancelMsg, action);
+							replyCancelMsg.addReceiver((AID) it.next());
+							myAgent.send(replyCancelMsg);
+						}							
 					}
 				}
 				catch(CodecException ce){
@@ -168,5 +179,26 @@ public class MarketAgent extends Agent
 				block();
 		}
 	}
+	
+    protected void startInvestors() 
+    {
+    	PlatformController container = getContainerController(); // get a container controller for creating new agents
+    	try 
+    	{
+    		String investorI = "Ev";
+    		String investorII = "Peter";
+		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated50_7.InvestorAgent", null);
+		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated50_7.InvestorAgentII", null);
+		    investorContrallerI.start();
+		    investorContrallerII.start();
+  
+		    investorList.add(new AID(investorI, AID.ISLOCALNAME));
+		    investorList.add(new AID(investorII, AID.ISLOCALNAME));            
+        }
+        catch (Exception e) {
+            System.err.println( "Exception while adding investors: " + e );
+            e.printStackTrace();
+        }
+    }
 }
 

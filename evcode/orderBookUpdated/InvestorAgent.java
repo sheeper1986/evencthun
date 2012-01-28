@@ -38,18 +38,17 @@ public class InvestorAgent extends Agent
 	//private Strategy tradeStrategy = new Strategy();
 	protected void setup()
 	{
-		try 
-		{
+		//try 
+		//{
 			System.out.println("This is updated50_7 " + getAID().getName());
 			
-			ServiceDescription sd = new ServiceDescription();
-            sd.setType( "NoisyTrader" );
-            sd.setName( "NoisyTraderDescription" );
-            DFAgentDescription dfd = new DFAgentDescription();
-            dfd.setName(getAID());
-            dfd.addServices( sd );
-            DFService.register( this, dfd );
-            
+			//ServiceDescription sd = new ServiceDescription();
+           // sd.setType( "NoisyTrader" );
+            //sd.setName( "NoisyTraderDescription" );
+           // DFAgentDescription dfd = new DFAgentDescription();
+           // dfd.setName(getAID());
+           // dfd.addServices( sd );
+           // DFService.register( this, dfd );           
             getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
     		getContentManager().registerOntology(MarketAgent.ontology);
 
@@ -61,10 +60,10 @@ public class InvestorAgent extends Agent
     		addBehaviour(LogonMarket);
     		addBehaviour(new LocalOrderManager());
     		//addBehaviour(new AutoCancel());
-		} 
-		catch (FIPAException e) {
-			e.printStackTrace();
-		}
+		//} 
+		//catch (FIPAException e) {
+		//	e.printStackTrace();
+		//}
 	 }
 	
 	private class TradingRequest extends OneShotBehaviour
@@ -83,8 +82,7 @@ public class InvestorAgent extends Agent
 			tradingRequestMsg.setConversationId("TradingRequest");
 			tradingRequestMsg.setContent("ReadyToStart");
 			tradingRequestMsg.addReceiver(MarketAgent.marketAID);
-			myAgent.send(tradingRequestMsg);	
-			
+			myAgent.send(tradingRequestMsg);				
 		}
 		
 	}
@@ -233,53 +231,4 @@ public class InvestorAgent extends Agent
 				block();
 			}
 		}
-	
-	/*private class AutoCancel extends CyclicBehaviour
-	{
-		public void action() 
-		{
-			//MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchConversationId("PriceInform"));
-			//ACLMessage receiPrice = receive(pt);
-			
-			//if(receiPrice != null)
-			//{
-				double marketPrice = MarketAgent.currentPrice;//Double.parseDouble(receiPrice.getContent());
-				//System.out.println(marketPrice);
-				if(pendingOrderList.size()>5 && marketPrice != 0)
-				{
-					ArrayList<Order> temp = new ArrayList();
-					temp.addAll(tradeStrategy.matchedOrderSpread(pendingOrderList, marketPrice, 3));
-					
-					int i = 0;
-					while (i < temp.size())
-					{
-						try
-						{
-							Action cancelAct = new Action(MarketAgent.marketAID, temp.get(i));
-							ACLMessage cancelMsg = new ACLMessage(ACLMessage.CANCEL);
-							cancelMsg.addReceiver(MarketAgent.marketAID);
-							cancelMsg.setOntology(MarketAgent.ontology.getName());
-							cancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-                            myAgent.getContentManager().fillContent(cancelMsg, cancelAct);
-							myAgent.send(cancelMsg);
-							//temp.remove(i);
-							i++;
-						 }
-						catch (CodecException e){
-							 e.printStackTrace();
-							 } 
-						catch (OntologyException e){
-								e.printStackTrace();
-								}	
-					 }
-					block();	
-				}
-				else
-					block();
-			//}
-			//else
-			//	block();	
-		}
-	}
-	*/
 }
