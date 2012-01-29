@@ -1,4 +1,4 @@
-package orderBookUpdated50_7;
+package orderBookUpdated50_9;
 
 import examples.content.eco.elements.Sell;
 import jade.content.onto.BasicOntology;
@@ -19,7 +19,7 @@ public class OrderBookOntology extends Ontology
 	public static final String ORDER_TYPE = "orderType";
 	public static final String ORDER_SIDE = "side";
 	public static final String ORDER_SYMBOL = "symbol";
-	public static final String ORDER_ORIGINAL_VOLUME = "originalVolume";
+	public static final String ORDER_ORIGINAL_VOLUME = "volume";
 	public static final String ORDER_PROCESSED_VOLUME = "processedVolume";
 	public static final String ORDER_LEFT_VOLUME = "leftVolume";
 	public static final String ORDER_PRICE = "price";

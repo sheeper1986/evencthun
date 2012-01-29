@@ -1,7 +1,9 @@
-package orderBookUpdated50_7;
+package orderBookUpdated50_9;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.ListIterator;
 import java.util.PriorityQueue;
 
@@ -9,7 +11,7 @@ import jade.content.AgentAction;
 
 public class Order implements AgentAction,Comparable<Order>
 {
-	private int orderType, side, originalVolume, processedVolume, leftVolume, status;
+	private int orderType, side, volume, processedVolume, leftVolume, status;
 	private String symbol;
 	private double price, dealingPrice;
 	private Long openTime;
@@ -74,13 +76,13 @@ public class Order implements AgentAction,Comparable<Order>
 	}
 	
 	//Set,Get volume
-	public void setOriginalVolume(int originalVolume)
+	public void setVolume(int volume)
 	{
-		this.originalVolume = originalVolume;
+		this.volume = volume;
 	}
-	public int getOriginalVolume()
+	public int getVolume()
 	{
-		return originalVolume;
+		return volume;
 	}
 	
 	public void setProcessedVolume(int processedVolume)
@@ -98,7 +100,7 @@ public class Order implements AgentAction,Comparable<Order>
 	}
 	public int getLeftVolume()
 	{
-		return originalVolume - processedVolume;
+		return volume - processedVolume;
 	}
 	
 	//Set,Get price
@@ -232,7 +234,7 @@ public class Order implements AgentAction,Comparable<Order>
 		this.setSymbol(order.getSymbol());
 		this.setOrderType(order.getOrderType());
 		this.setSide(order.getSide());
-		this.setOriginalVolume(order.getOriginalVolume());
+		this.setVolume(order.getVolume());
 		this.setProcessedVolume(order.getProcessedVolume());
 		this.setPrice(order.getPrice());
 		this.setDealingPrice(order.getDealingPrice());
@@ -287,6 +289,104 @@ public class Order implements AgentAction,Comparable<Order>
 		}		
 	}
 	
+	public void updateLocalOrderbook(LinkedList<Order> buySideOrders, LinkedList<Order> sellSideOrders)
+	{
+		if(this.getSide() == 1)
+		{
+			if(this.getStatus() == 0)
+			{
+				buySideOrders.add(this);
+				Collections.sort(buySideOrders);			
+			}
+			else if(this.getStatus() == 1||this.getStatus() == 3 || this.getStatus() == 4)
+			{
+				int i = 0;
+				while(i < buySideOrders.size())
+				{
+					if(this.getOrderID().equals(buySideOrders.get(i).getOrderID()))
+					{
+						buySideOrders.remove(i);
+					}
+					i++;
+				}
+			}
+			else if(this.getStatus() == 2)
+			{
+				if(this.getOrderType() == 1)
+				{
+					int i = 0;
+					while(i < buySideOrders.size())
+					{
+						if(this.getOrderID().equals(buySideOrders.get(i).getOrderID()))
+						{
+							buySideOrders.remove(i);
+						}
+						i++;
+					}
+				}
+				else
+				{
+					int i = 0;
+					while(i < buySideOrders.size())
+					{
+						if(this.getOrderID().equals(buySideOrders.get(i).getOrderID()))
+						{
+							buySideOrders.get(i).setProcessedVolume(buySideOrders.get(i).getProcessedVolume() + this.getProcessedVolume());
+						}
+						i++;
+					}
+				}
+			}
+		}
+		else
+		{
+			if(this.getStatus() == 0)
+			{
+				sellSideOrders.add(this);
+			    Collections.sort(sellSideOrders);
+			}
+			else if(this.getStatus() == 1||this.getStatus() == 3 || this.getStatus() == 4)
+			{
+				int i = 0;
+				while(i < sellSideOrders.size())
+				{
+					if(this.getOrderID().equals(sellSideOrders.get(i).getOrderID()))
+					{
+						sellSideOrders.remove(i);
+					}
+					i++;
+				}
+			}
+			else if(this.getStatus() == 2)
+			{
+				if(this.getOrderType() == 1)
+				{
+					int i = 0;
+					while(i < sellSideOrders.size())
+					{
+						if(this.getOrderID().equals(sellSideOrders.get(i).getOrderID()))
+						{
+							sellSideOrders.remove(i);
+						}
+						i++;
+					}
+				}
+				else
+				{
+					int i = 0;
+					while(i < sellSideOrders.size())
+					{
+						if(this.getOrderID().equals(sellSideOrders.get(i).getOrderID()))
+						{
+							sellSideOrders.get(i).setProcessedVolume(sellSideOrders.get(i).getProcessedVolume() + this.getProcessedVolume());
+						}
+						i++;
+					}
+				}
+			}
+		}
+	}
+	
 	public void cancelFrom(PriorityQueue<Order> oBList)
 	{
 		Iterator<Order> it = oBList.iterator();
@@ -302,27 +402,27 @@ public class Order implements AgentAction,Comparable<Order>
 	
 	public String toString()
 	{
-		if(this.isNewOrder())
+		if(this.isNewOrder()||this.isCanceled())
 		{
 			if(this.isMarketOrder())
 			{
-				return (OrderSide.getSide(this).toString() + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume " + this.getOriginalVolume() + " " + OrderStatus.getOrderStatus(this));
+				return (OrderSide.getSide(this).toString() + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " LeftVolume " + this.getLeftVolume() + " " + OrderStatus.getOrderStatus(this));
 			}
 			else
-				return (OrderSide.getSide(this).toString() + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume " + this.getOriginalVolume() + " Price " + this.getPrice() + " " + OrderStatus.getOrderStatus(this));
+				return (OrderSide.getSide(this).toString() + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " LeftVolume " + this.getLeftVolume() + " Price " + this.getPrice() + " " + OrderStatus.getOrderStatus(this));
 		}
-		else if(this.isFilled()||this.isPartiallyFilled()||this.isCanceled())
+		else if(this.isFilled()||this.isPartiallyFilled())
 		{
 			if(this.isMarketOrder())
 			{
-				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume " + this.getProcessedVolume() + "/" + this.getOriginalVolume() + " with DealingPrice " + this.getDealingPrice() + " " + OrderStatus.getOrderStatus(this));
+				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume " + this.getProcessedVolume() + "/" + this.getVolume() + " with DealingPrice " + this.getDealingPrice() + " " + OrderStatus.getOrderStatus(this));
 			}
 			else
-				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume "+ this.getProcessedVolume() + "/" + this.getOriginalVolume()  + " with DealingPrice " + this.getPrice() + " " + OrderStatus.getOrderStatus(this));
+				return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume "+ this.getProcessedVolume() + "/" + this.getVolume()  + " with DealingPrice " + this.getPrice() + " " + OrderStatus.getOrderStatus(this));
 		}
 		else
 		{
-			return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " Volume "+ this.getOriginalVolume() + " " + OrderStatus.getOrderStatus(this));
+			return (OrderSide.getSide(this).toString()  + " OrderID " + this.getOrderID() + " " + this.getSymbol() + " " + OrderType.getOrderType(this).toString() + " LeftVolume " + this.getLeftVolume() + " " + OrderStatus.getOrderStatus(this));
 		}		
 	}
 }

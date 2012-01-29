@@ -1,4 +1,4 @@
-package orderBookUpdated50_7;
+package orderBookUpdated50_9;
 
 import java.util.*;
 
@@ -32,7 +32,7 @@ public class MarketAgent extends Agent
 	public static final Codec codecI = new SLCodec();
 	public static PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
 	public static PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
-	protected Vector investorList = new Vector();  
+	protected ArrayList investorList = new ArrayList();  
 	protected int investorCount = 0;
 	//public static double currentPrice;
 	
@@ -40,7 +40,7 @@ public class MarketAgent extends Agent
 	{
 		//try 
 		//{
-			System.out.println("This is updated50_7 " + getAID().getName());
+			System.out.println("This is updated50_9 " + getAID().getName());
            
 			//DFAgentDescription dfd = new DFAgentDescription();
 			//dfd.setName(getAID());
@@ -50,10 +50,10 @@ public class MarketAgent extends Agent
 			getContentManager().registerOntology(ontology);
 			
 			InitializeOrder io = new InitializeOrder();
-			io.initializeBuyOrder(buySideOrders, sellSideOrders, 1000);
+			io.initializeBuyOrder(buySideOrders, sellSideOrders, 5);
 			
-			System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideOrders.size());
-			System.out.println(getAID().getLocalName() + " LocalSellSellOrders: " + sellSideOrders.size());
+			System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideOrders);
+			System.out.println(getAID().getLocalName() + " LocalSellSellOrders: " + sellSideOrders);
 			
 			addBehaviour(new InitOrderbookResponder());
 			addBehaviour(new OrderMatchEngine());
@@ -68,7 +68,8 @@ public class MarketAgent extends Agent
 	{
 		public void action()
 		{
-			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), MessageTemplate.MatchConversationId("TradingRequest"));
+			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
+					MessageTemplate.MatchConversationId("TradingRequest"));
 			ACLMessage tradingRequestMsg = receive(pt);
 
 			if(tradingRequestMsg != null)
@@ -100,7 +101,8 @@ public class MarketAgent extends Agent
 	{
 		public void action()
 		{
-			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(ontology.getName())); 
+			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), 
+					MessageTemplate.MatchOntology(ontology.getName())); 
 			ACLMessage orderRequestMsg = receive(mt);
 			if(orderRequestMsg != null)
 			{
@@ -115,13 +117,24 @@ public class MarketAgent extends Agent
 					{	
 						if(placedOrder.getSide() == 1)
 						{
-							buySideOrders.add(placedOrder);
+							buySideOrders.add(placedOrder);		
+							
 						}
 						else
 						{
 							sellSideOrders.add(placedOrder);
 						}
-						
+						for (Iterator it = investorList.iterator();  it.hasNext();) 
+						{   
+							Action action = new Action(orderRequestMsg.getSender(), placedOrder);
+							ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+							replyOrderMsg.setOntology(ontology.getName());
+							replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							myAgent.getContentManager().fillContent(replyOrderMsg, action);
+							replyOrderMsg.addReceiver((AID) it.next());
+							myAgent.send(replyOrderMsg);
+						}							
+
 						ArrayList<Order> tempBuyOrder = new ArrayList<Order>();
 						LimitOrderBook orderbook = new LimitOrderBook();
 						tempBuyOrder.addAll(orderbook.matchMechanism(buySideOrders,sellSideOrders));
@@ -129,11 +142,10 @@ public class MarketAgent extends Agent
 						int i = 0;
 						while(i < tempBuyOrder.size())
 						{
-							//currentPrice = tempBuyOrder.get(i).getDealingPrice();
-							Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
-													
+							//currentPrice = tempBuyOrder.get(i).getDealingPrice();							
 							for (Iterator it = investorList.iterator();  it.hasNext();) 
 							{
+								Action action = new Action(orderRequestMsg.getSender(), tempBuyOrder.get(i));
 								ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
 								replyOrderMsg.setOntology(ontology.getName());
 								replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -143,6 +155,7 @@ public class MarketAgent extends Agent
 							}							
 							i++;
 						}
+						
 					}
 					else if(orderRequestMsg.getPerformative() == ACLMessage.CANCEL)
 					{
@@ -156,9 +169,10 @@ public class MarketAgent extends Agent
 						{
 							placedOrder.cancelFrom(sellSideOrders);
 						}
-						Action action = new Action(orderRequestMsg.getSender(),placedOrder);
+						
 						for (Iterator it = investorList.iterator();  it.hasNext();) 
 						{
+							Action action = new Action(orderRequestMsg.getSender(),placedOrder);
 							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.INFORM);
 							replyCancelMsg.setOntology(ontology.getName());
 							replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
@@ -167,6 +181,8 @@ public class MarketAgent extends Agent
 							myAgent.send(replyCancelMsg);
 						}							
 					}
+					System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders);
+					System.out.println(getAID().getLocalName() + " SellSellOrders: " + sellSideOrders);
 				}
 				catch(CodecException ce){
 					ce.printStackTrace();
@@ -187,8 +203,8 @@ public class MarketAgent extends Agent
     	{
     		String investorI = "Ev";
     		String investorII = "Peter";
-		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated50_7.InvestorAgent", null);
-		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated50_7.InvestorAgentII", null);
+		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated50_9.InvestorAgent", null);
+		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated50_9.InvestorAgentII", null);
 		    investorContrallerI.start();
 		    investorContrallerII.start();
   

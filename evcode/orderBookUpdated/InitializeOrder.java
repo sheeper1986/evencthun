@@ -1,4 +1,4 @@
-package orderBookUpdated50_7;
+package orderBookUpdated50_9;
 
 import java.util.PriorityQueue;
 
@@ -15,7 +15,7 @@ public class InitializeOrder
 	{
 		for(int i = 0; i < orderQuantitiy; i++)
 		{
-			int randomVolume = (int)(1+Math.random()*200);
+			int randomVolume = (int)(10+Math.random()*200);
 			int randomBuyPrice = (int)(40+Math.random()*10);
 		
 			Order newOrder = new Order();
@@ -23,7 +23,7 @@ public class InitializeOrder
             newOrder.setOrderID("Test" + String.valueOf(id++));
 			newOrder.setSymbol("GOOGLE");
 			newOrder.setSide(1);
-			newOrder.setOriginalVolume(randomVolume);
+			newOrder.setVolume(randomVolume);
 			newOrder.setPrice(randomBuyPrice);
 			newOrder.setOpenTime(System.currentTimeMillis());
 			
@@ -31,7 +31,7 @@ public class InitializeOrder
 		}
 		for(int i = 0; i < orderQuantitiy; i++)
 		{
-			int randomVolume = (int)(1+Math.random()*200);
+			int randomVolume = (int)(10+Math.random()*200);
 			int randomSellPrice = (int)(50+Math.random()*11);
 		
 			Order newOrder = new Order();
@@ -39,7 +39,7 @@ public class InitializeOrder
             newOrder.setOrderID("Test" + String.valueOf(id++));
 			newOrder.setSymbol("GOOGLE");
 			newOrder.setSide(2);
-			newOrder.setOriginalVolume(randomVolume);
+			newOrder.setVolume(randomVolume);
 			newOrder.setPrice(randomSellPrice);
 			newOrder.setOpenTime(System.currentTimeMillis());
 			

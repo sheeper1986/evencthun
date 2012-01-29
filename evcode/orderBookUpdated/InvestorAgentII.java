@@ -1,4 +1,4 @@
-package orderBookUpdated50_7;
+package orderBookUpdated50_9;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -38,18 +38,17 @@ public class InvestorAgentII extends Agent
 	//private Strategy tradeStrategy = new Strategy();
 	protected void setup()
 	{
-		try 
-		{
-			System.out.println("This is updated50_7 " + getAID().getName());
+		//try 
+		//{
+			System.out.println("This is updated50_9 " + getAID().getName());
 			
-			ServiceDescription sd = new ServiceDescription();
-            sd.setType( "NoisyTrader" );
-            sd.setName( "NoisyTraderDescription" );
-            DFAgentDescription dfd = new DFAgentDescription();
-            dfd.setName(getAID());
-            dfd.addServices( sd );
-            DFService.register( this, dfd );
-            
+			//ServiceDescription sd = new ServiceDescription();
+           // sd.setType( "NoisyTrader" );
+            //sd.setName( "NoisyTraderDescription" );
+           // DFAgentDescription dfd = new DFAgentDescription();
+           // dfd.setName(getAID());
+           // dfd.addServices( sd );
+           // DFService.register( this, dfd );           
             getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
     		getContentManager().registerOntology(MarketAgent.ontology);
 
@@ -61,10 +60,10 @@ public class InvestorAgentII extends Agent
     		addBehaviour(LogonMarket);
     		addBehaviour(new LocalOrderManager());
     		//addBehaviour(new AutoCancel());
-		} 
-		catch (FIPAException e) {
-			e.printStackTrace();
-		}
+		//} 
+		//catch (FIPAException e) {
+		//	e.printStackTrace();
+		//}
 	 }
 	
 	private class TradingRequest extends OneShotBehaviour
@@ -83,8 +82,7 @@ public class InvestorAgentII extends Agent
 			tradingRequestMsg.setConversationId("TradingRequest");
 			tradingRequestMsg.setContent("ReadyToStart");
 			tradingRequestMsg.addReceiver(MarketAgent.marketAID);
-			myAgent.send(tradingRequestMsg);	
-			
+			myAgent.send(tradingRequestMsg);				
 		}
 		
 	}
@@ -93,7 +91,8 @@ public class InvestorAgentII extends Agent
 		int i = 0;
 		public void action() 
 		{
-			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.AGREE), MessageTemplate.MatchConversationId("TradingPermission")); 
+			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.AGREE),
+					MessageTemplate.MatchConversationId("TradingPermission")); 
             ACLMessage tradingRequestMsg = receive(mt);
             
             if(tradingRequestMsg != null)
@@ -139,7 +138,7 @@ public class InvestorAgentII extends Agent
 					newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 					newOrder.setSymbol("GOOGLE");
 					newOrder.setSide(randomSide);
-					newOrder.setOriginalVolume(randomVolume);
+					newOrder.setVolume(randomVolume);
 					newOrder.setOpenTime(System.currentTimeMillis());
 				}
 				else if(newOrder.getOrderType() == 2)
@@ -150,7 +149,7 @@ public class InvestorAgentII extends Agent
 					{
 						newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
-						newOrder.setOriginalVolume(randomVolume);
+						newOrder.setVolume(randomVolume);
 						newOrder.setPrice(randomBuyPrice);
 						newOrder.setOpenTime(System.currentTimeMillis());
 					}
@@ -158,7 +157,7 @@ public class InvestorAgentII extends Agent
 					{
 						newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
-						newOrder.setOriginalVolume(randomVolume);
+						newOrder.setVolume(randomVolume);
 						newOrder.setPrice(randomSellPrice);
 						newOrder.setOpenTime(System.currentTimeMillis());
 					}	
@@ -186,7 +185,8 @@ public class InvestorAgentII extends Agent
 	{
 		public void action()
 		{
-			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), MessageTemplate.MatchOntology(MarketAgent.ontology.getName())); 
+			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchLanguage(FIPANames.ContentLanguage.FIPA_SL0), 
+					MessageTemplate.MatchOntology(MarketAgent.ontology.getName())); 
 			//blockingReceive() cannot use here, because it keeps messages, cyclicBehaviour will not stop
 			ACLMessage processedOrderMsg = receive(mt);
 
@@ -196,30 +196,15 @@ public class InvestorAgentII extends Agent
 				ContentElement ce = null;
 				ce = getContentManager().extractContent(processedOrderMsg);	
 				Action act = (Action) ce;
-				Order processedOrder = (Order) act.getAction();
+				Order orderInfomation = (Order) act.getAction();
 				
 				if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 				{
-					if(processedOrder.getStatus() == 1)
-					{
-						System.out.println("Filled !" + processedOrder);
-					}
-					else if(processedOrder.getStatus() == 2)
-					{
-						System.out.println("Great PartlyFilled !" + processedOrder);
-					}
-					else if(processedOrder.getStatus() == 3)
-					{
-						System.out.println("Rejected !" + processedOrder);
-					}
-					//asset.updateAssetList(assetList, processedOrder);
+					orderInfomation.updateLocalOrderbook(buySideOrdersII, sellSideOrdersII);
+					orderInfomation.updatePendingOrderList(pendingOrderListII);
 				}
-
-				else if(processedOrderMsg.getPerformative() == ACLMessage.CONFIRM)
-				{
-					System.out.println("Cancel Successful !" + processedOrder);
-				}
-				processedOrder.updatePendingOrderList(pendingOrderListII);
+				System.out.println(getAID().getLocalName() + " LocalBuyOrdersII: " + buySideOrdersII);
+				System.out.println(getAID().getLocalName() + " LocalSellOrdersII: " + sellSideOrdersII);
 				System.out.println("Updated Pending ListII " + pendingOrderListII);
 			}	
 			catch(CodecException ce){
@@ -233,53 +218,26 @@ public class InvestorAgentII extends Agent
 				block();
 			}
 		}
-	
-	/*private class AutoCancel extends CyclicBehaviour
-	{
-		public void action() 
-		{
-			//MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.INFORM),MessageTemplate.MatchConversationId("PriceInform"));
-			//ACLMessage receiPrice = receive(pt);
-			
-			//if(receiPrice != null)
-			//{
-				double marketPrice = MarketAgent.currentPrice;//Double.parseDouble(receiPrice.getContent());
-				//System.out.println(marketPrice);
-				if(pendingOrderList.size()>5 && marketPrice != 0)
-				{
-					ArrayList<Order> temp = new ArrayList();
-					temp.addAll(tradeStrategy.matchedOrderSpread(pendingOrderList, marketPrice, 3));
-					
-					int i = 0;
-					while (i < temp.size())
-					{
-						try
-						{
-							Action cancelAct = new Action(MarketAgent.marketAID, temp.get(i));
-							ACLMessage cancelMsg = new ACLMessage(ACLMessage.CANCEL);
-							cancelMsg.addReceiver(MarketAgent.marketAID);
-							cancelMsg.setOntology(MarketAgent.ontology.getName());
-							cancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-                            myAgent.getContentManager().fillContent(cancelMsg, cancelAct);
-							myAgent.send(cancelMsg);
-							//temp.remove(i);
-							i++;
-						 }
-						catch (CodecException e){
-							 e.printStackTrace();
-							 } 
-						catch (OntologyException e){
-								e.printStackTrace();
-								}	
-					 }
-					block();	
-				}
-				else
-					block();
-			//}
-			//else
-			//	block();	
-		}
-	}
-	*/
 }
+
+/*if(processedOrder.getStatus() == 0)
+{
+	System.out.println(getAID().getName() + " Add !" + processedOrder);
+}
+else if(processedOrder.getStatus() == 1)
+{
+	System.out.println(getAID().getName() + " Filled !" + processedOrder);
+}
+else if(processedOrder.getStatus() == 2)
+{
+	System.out.println(getAID().getName() + " Great PartlyFilled !" + processedOrder);
+}
+else if(processedOrder.getStatus() == 3)
+{
+	System.out.println(getAID().getName() + " Rejected !" + processedOrder);
+}*/
+//else
+//{
+	//System.out.println(getAID().getName() + " Cancel Successful !" + processedOrder);
+//}
+//asset.updateAssetList(assetList, processedOrder);
