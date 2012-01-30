@@ -1,4 +1,4 @@
-package orderBookUpdated50_9;
+package orderBookUpdated50_91;
 
 import java.util.*;
 
@@ -34,13 +34,12 @@ public class MarketAgent extends Agent
 	public static PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
 	protected ArrayList investorList = new ArrayList();  
 	protected int investorCount = 0;
-	//public static double currentPrice;
 	
 	protected void setup()
 	{
 		//try 
 		//{
-			System.out.println("This is updated50_9 " + getAID().getName());
+			System.out.println("This is updated50_91 " + getAID().getName());
            
 			//DFAgentDescription dfd = new DFAgentDescription();
 			//dfd.setName(getAID());
@@ -173,7 +172,7 @@ public class MarketAgent extends Agent
 						for (Iterator it = investorList.iterator();  it.hasNext();) 
 						{
 							Action action = new Action(orderRequestMsg.getSender(),placedOrder);
-							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.INFORM);
+							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
 							replyCancelMsg.setOntology(ontology.getName());
 							replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 							myAgent.getContentManager().fillContent(replyCancelMsg, action);
@@ -203,8 +202,8 @@ public class MarketAgent extends Agent
     	{
     		String investorI = "Ev";
     		String investorII = "Peter";
-		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated50_9.InvestorAgent", null);
-		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated50_9.InvestorAgentII", null);
+		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated50_91.InvestorAgent", null);
+		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated50_91.InvestorAgentII", null);
 		    investorContrallerI.start();
 		    investorContrallerII.start();
   

@@ -1,4 +1,6 @@
-package orderBookUpdated50_9;
+package orderBookUpdated50_91;
+
+import jade.core.Agent;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -12,14 +14,20 @@ public class Strategy
 	private int trigger;
 	private ArrayList<Order> pOList = new ArrayList<Order>();
 	private ArrayList<Asset> assetList = new ArrayList<Asset>();
-	private PriorityQueue<Order> oBBList = new PriorityQueue<Order>();
-	private PriorityQueue<Order> oBSList = new PriorityQueue<Order>();
+	private LinkedList<Order> oBBList = new LinkedList<Order>();
+	private LinkedList<Order> oBSList = new LinkedList<Order>();
+	//private InvestorAgent a;
+	private int id = 0;
 	
 	public Strategy()
 	{
 		
 	}
 	
+	//public Strategy(InvestorAgent a)
+	//{
+		//this.a = a;
+	//}
 	/*public Strategy(PriorityQueue<Order> oBBList, PriorityQueue<Order> oBSList, int trigger)
 	{
 		this.oBBList = oBBList;
@@ -50,7 +58,7 @@ public class Strategy
 	}*/
 
 	
-	public ArrayList<Order> matchedOrderSpread(ArrayList<Order> pOList, double price, double spread)
+	public ArrayList<Order> cancelOrders(ArrayList<Order> pOList, double price, double spread)
 	{
 		ArrayList<Order> temp = new ArrayList<Order>();
 		int i = 0;
