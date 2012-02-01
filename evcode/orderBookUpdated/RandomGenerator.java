@@ -1,4 +1,4 @@
-package orderBookUpdated50_91;
+package orderBookUpdated51_1;
 
 import java.math.BigDecimal;
 import java.util.Random;
@@ -9,7 +9,7 @@ public class RandomGenerator
 	
 	public RandomGenerator()
 	{
-		
+
 	}
 	public int randomType(int probOfMarket)
 	{
@@ -52,41 +52,39 @@ public class RandomGenerator
 	public double randomBidPrice(double bestBidPrice)
 	{
 		int num = random.nextInt(100) + 1;//1-100
-        int result;
         
         if(num <= 5)
         {
-            return bestBidPrice - 0.4;
+            return new BigDecimal(bestBidPrice - 0.4).setScale(1, BigDecimal.ROUND_HALF_DOWN).doubleValue();
         }
         else if(num > 5 && num <= 25)
         {
-        	return bestBidPrice - 0.3;
+        	return new BigDecimal(bestBidPrice - 0.3).setScale(1, BigDecimal.ROUND_HALF_DOWN).doubleValue();
         }
         else if(num > 25 && num <= 55)
         {
-        	return bestBidPrice - 0.2;
+        	return new BigDecimal(bestBidPrice - 0.2).setScale(1, BigDecimal.ROUND_HALF_DOWN).doubleValue();
         }
-        return bestBidPrice - 0.1;
+        return new BigDecimal(bestBidPrice - 0.1).setScale(1, BigDecimal.ROUND_HALF_DOWN).doubleValue();
 	}
 	
 	public double randomAskPrice(double bestAskPrice)
 	{
 		int num = random.nextInt(100) + 1;//1-100
-        int result;
         
         if(num <= 5)
         {
-            return bestAskPrice + 0.4;
+            return new BigDecimal(bestAskPrice + 0.4).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
         }
         else if(num > 5 && num <= 25)
         {
-        	return bestAskPrice + 0.3;
+        	return new BigDecimal(bestAskPrice + 0.3).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
         }
         else if(num > 25 && num <= 55)
         {
-        	return bestAskPrice + 0.2;
+        	return new BigDecimal(bestAskPrice + 0.2).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
         }
-        return bestAskPrice + 0.1;
+        return new BigDecimal(bestAskPrice + 0.1).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue();
 	}
 	
 	public double randomInitBuyPrice(double Price, double spread)
