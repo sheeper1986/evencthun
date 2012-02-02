@@ -1,5 +1,6 @@
-package orderBookUpdated51_1;
+package orderBookUpdated51_4;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
@@ -65,7 +66,7 @@ public class BuySideMatchEngine
 					
 						if(sellSideOrders.peek() == null)
 						{
-							buySideOrders.peek().setProcessedOrder(2, cumulatedVolume, cumulatedPrice/cumulatedVolume, System.currentTimeMillis());
+							buySideOrders.peek().setProcessedOrder(2, cumulatedVolume, new BigDecimal(cumulatedPrice/cumulatedVolume).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue(), System.currentTimeMillis());
 							buySideOrders.peek().setVolume(0);
 							processedOrders.add(buySideOrders.poll());					
 							break;
@@ -79,7 +80,7 @@ public class BuySideMatchEngine
 								double totalPrice = cumulatedPrice + sellSideOrders.peek().getPrice()*buySideOrders.peek().getVolume();
 								int totalVolume = cumulatedVolume + buySideOrders.peek().getVolume();
 								
-								buySideOrders.peek().setProcessedOrder(1, totalVolume, totalPrice/totalVolume, System.currentTimeMillis());
+								buySideOrders.peek().setProcessedOrder(1, totalVolume, new BigDecimal(totalPrice/totalVolume).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue(), System.currentTimeMillis());
 								buySideOrders.peek().setVolume(0);
 								processedOrders.add(buySideOrders.poll());
 								
@@ -97,7 +98,7 @@ public class BuySideMatchEngine
 								double totalPrice = cumulatedPrice + sellSideOrders.peek().getPrice()*buySideOrders.peek().getVolume();
 								int totalVolume = cumulatedVolume + buySideOrders.peek().getVolume();
 								
-								buySideOrders.peek().setProcessedOrder(1, totalVolume, totalPrice/totalVolume, System.currentTimeMillis());
+								buySideOrders.peek().setProcessedOrder(1, totalVolume, new BigDecimal(totalPrice/totalVolume).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue(), System.currentTimeMillis());
 								buySideOrders.peek().setVolume(0);
 								processedOrders.add(buySideOrders.poll());
 								

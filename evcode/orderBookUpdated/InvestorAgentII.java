@@ -1,4 +1,4 @@
-package orderBookUpdated51_1;
+package orderBookUpdated51_4;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -36,7 +36,7 @@ public class InvestorAgentII extends Agent
 
 	protected void setup()
 	{
-		System.out.println("This is updated51_1 " + getAID().getName());
+		System.out.println("This is updated51_4 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -54,13 +54,13 @@ public class InvestorAgentII extends Agent
 	{
 		public void action() 
 		{
-			buySideOrdersII.addAll(MarketAgent.buySideOrders);
+			buySideOrdersII.addAll(MarketAgent.buySideQueue);
     		Collections.sort(buySideOrdersII);
-    		sellSideOrdersII.addAll(MarketAgent.sellSideOrders);
+    		sellSideOrdersII.addAll(MarketAgent.sellSideQueue);
     		Collections.sort(sellSideOrdersII);
     		
-    		System.out.println(getAID().getLocalName() + " LocalBuyOrdersII: " + buySideOrdersII.size());
-    		System.out.println(getAID().getLocalName() + " LocalSellSellOrdersII: " + sellSideOrdersII.size());
+    		System.out.println(getAID().getLocalName() + " LocalBuyOrdersII: " + buySideOrdersII);
+    		System.out.println(getAID().getLocalName() + " LocalSellOrdersII: " + sellSideOrdersII);
     		
 			ACLMessage tradingRequestMsg = new ACLMessage(ACLMessage.REQUEST);
 			tradingRequestMsg.setConversationId("TradingRequest");
@@ -112,13 +112,13 @@ public class InvestorAgentII extends Agent
 				if(buySideOrdersII.size() > 0 && sellSideOrdersII.size() > 0)
 				{
 					Order newOrder = new Order();					
-					newOrder.setOrderType(rg.randomType(35));				
+					newOrder.setOrderType(rg.randomType(40));				
 					if(newOrder.getOrderType() == 1)
 					{
 						newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
 						newOrder.setSide(rg.randomSide(50));
-						newOrder.setVolume(rg.randomVolume(10, 200));
+						newOrder.setVolume(rg.randomVolume(10, 190));
 						newOrder.setOpenTime(System.currentTimeMillis());
 					}
 					else if(newOrder.getOrderType() == 2)
@@ -129,7 +129,7 @@ public class InvestorAgentII extends Agent
 						{
 							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(10, 200));
+							newOrder.setVolume(rg.randomVolume(10, 190));
 							newOrder.setPrice(rg.randomBidPrice(buySideOrdersII.get(0).getPrice()));
 							newOrder.setOpenTime(System.currentTimeMillis());
 						}
@@ -153,27 +153,28 @@ public class InvestorAgentII extends Agent
 					orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 					myAgent.getContentManager().fillContent(orderRequestMsg, action);
 					myAgent.send(orderRequestMsg);	
-				}
-				
-				Strategy cancelStrategy = new Strategy();
-				ArrayList<Order> temp = new ArrayList<Order>();
-				temp.addAll(cancelStrategy.cancelOrders(pendingOrderListII, (buySideOrdersII.get(0).getPrice() + sellSideOrdersII.get(0).getPrice())/2, 1));
-				if(temp.size() > 0)
-				{
-					int i = 0;
-					while(i < temp.size())
+					
+					Strategy cancelStrategy = new Strategy();
+					ArrayList<Order> temp = new ArrayList<Order>();
+					temp.addAll(cancelStrategy.cancelOrders(pendingOrderListII, (buySideOrdersII.get(0).getPrice() + sellSideOrdersII.get(0).getPrice())/2, 0.8));
+					if(temp.size() > 0)
 					{
-						Action actionI = new Action(MarketAgent.marketAID, temp.get(i));
-						ACLMessage cancelRequestMsg = new ACLMessage(ACLMessage.CANCEL);
-						cancelRequestMsg.addReceiver(MarketAgent.marketAID);
-						cancelRequestMsg.setOntology(MarketAgent.ontology.getName());
-						cancelRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-						myAgent.getContentManager().fillContent(cancelRequestMsg, actionI);
-						myAgent.send(cancelRequestMsg);	
-						System.out.println("Cancel " + temp.get(i));
-						i++;
-					}	
-				}				
+						int i = 0;
+						while(i < temp.size())
+						{
+							Action actionI = new Action(MarketAgent.marketAID, temp.get(i));
+							ACLMessage cancelRequestMsg = new ACLMessage(ACLMessage.CANCEL);
+							cancelRequestMsg.addReceiver(MarketAgent.marketAID);
+							cancelRequestMsg.setOntology(MarketAgent.ontology.getName());
+							cancelRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							myAgent.getContentManager().fillContent(cancelRequestMsg, actionI);
+							myAgent.send(cancelRequestMsg);	
+							System.out.println("Cancel " + temp.get(i));
+							i++;
+						}	
+					}				
+				}
+			
 				reset(randomTime);
 			}
 			catch(Exception ex){
@@ -199,18 +200,20 @@ public class InvestorAgentII extends Agent
 				    ce = getContentManager().extractContent(processedOrderMsg);	
 				    Action act = (Action) ce;
 				    Order orderInfomation = (Order) act.getAction();
-				
+				    //System.out.println(orderInfomation);
+				    
 				    if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 				    {
 				    	orderInfomation.updateLocalOrderbook(buySideOrdersII, sellSideOrdersII);
-				    	orderInfomation.updatePendingOrderList(pendingOrderListII);
+				    	
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
 				    	{
+				    		orderInfomation.updatePendingOrderList(pendingOrderListII);
 					    	System.out.println("Updated Pending ListII " + pendingOrderListII);
 				    	}
 				    }
-				    	//System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideOrders);
-				    	//System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideOrders);
+				    	System.out.println(getAID().getLocalName() + " BuyOrdersII: " + buySideOrdersII);
+				    	System.out.println(getAID().getLocalName() + " SellOrdersII: " + sellSideOrdersII);
 				}	
 				catch(CodecException ce){
 					ce.printStackTrace();

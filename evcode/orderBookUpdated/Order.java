@@ -1,4 +1,4 @@
-package orderBookUpdated51_1;
+package orderBookUpdated51_4;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -234,9 +234,9 @@ public class Order implements AgentAction,Comparable<Order>
 	
 	public void updatePendingOrderList(ArrayList<Order> pOList)
 	{
-		if(this.getStatus() == 1 || this.getStatus() == 2)
+		if(this.isFilled() || this.isPartiallyFilled())
 		{
-			if(this.getOrderType() == 1)
+			if(this.isMarketOrder())
 			{
 				int i = 0;
 				while(i < pOList.size())
@@ -250,7 +250,7 @@ public class Order implements AgentAction,Comparable<Order>
 					i++;
 				}
 			}
-			else if(this.getOrderType() == 2)
+			else//this.isLimitOrder
 			{
 				int i = 0;
 				while(i < pOList.size())
@@ -280,19 +280,11 @@ public class Order implements AgentAction,Comparable<Order>
 	
 	public void updateLocalOrderbook(LinkedList<Order> buySideOrders, LinkedList<Order> sellSideOrders)
 	{
-		if(this.getSide() == 1)
+		if(this.getOrderID().contains("Test"))
 		{
-			if(this.getStatus() == 0)
+			if(this.isBuySide())
 			{
-				if(this.isLimitOrder())
-				{
-					buySideOrders.add(this);
-					Collections.sort(buySideOrders);	
-				}		
-			}
-			else if(this.getStatus() == 1||this.getStatus() == 3 || this.getStatus() == 4)
-			{
-				if(this.isLimitOrder())
+				if(this.isFilled())
 				{
 					int i = 0;
 					while(i < buySideOrders.size())
@@ -305,35 +297,9 @@ public class Order implements AgentAction,Comparable<Order>
 					}
 				}
 			}
-			else if(this.getStatus() == 2)
+			else//SellSide
 			{
-				if(this.isLimitOrder())
-				{
-					int i = 0;
-					while(i < buySideOrders.size())
-					{
-						if(this.getOrderID().equals(buySideOrders.get(i).getOrderID()))
-						{
-							buySideOrders.get(i).setProcessedVolume(buySideOrders.get(i).getVolume() - this.getProcessedVolume());
-						}
-						i++;
-					}
-				}
-			}
-		}
-		else//SellSide
-		{
-			if(this.getStatus() == 0)
-			{
-				if(this.isLimitOrder())
-				{
-					sellSideOrders.add(this);
-				    Collections.sort(sellSideOrders);
-				}
-			}
-			else if(this.getStatus() == 1||this.getStatus() == 3 || this.getStatus() == 4)
-			{
-				if(this.isLimitOrder())
+				if(this.isFilled())
 				{
 					int i = 0;
 					while(i < sellSideOrders.size())
@@ -346,22 +312,81 @@ public class Order implements AgentAction,Comparable<Order>
 					}
 				}
 			}
-			else if(this.getStatus() == 2)
+		}
+		else//not Test
+		{
+			if(this.isBuySide())
 			{
 				if(this.isLimitOrder())
 				{
-					int i = 0;
-					while(i < sellSideOrders.size())
+					if(this.isNewOrder())
 					{
-						if(this.getOrderID().equals(sellSideOrders.get(i).getOrderID()))
+						buySideOrders.add(this);
+						Collections.sort(buySideOrders);	
+					}
+					else if(this.isFilled()||this.isCanceled())
+					{
+						int i = 0;
+						while(i < buySideOrders.size())
 						{
-							sellSideOrders.get(i).setProcessedVolume(sellSideOrders.get(i).getVolume() - this.getProcessedVolume());
+							if(this.getOrderID().equals(buySideOrders.get(i).getOrderID()))
+							{
+								buySideOrders.remove(i);
+							}
+							i++;
 						}
-						i++;
+					}
+					else if(this.isPartiallyFilled())
+					{
+						int i = 0;
+						while(i < buySideOrders.size())
+						{
+							if(this.getOrderID().equals(buySideOrders.get(i).getOrderID()))
+							{
+								buySideOrders.get(i).setVolume(buySideOrders.get(i).getVolume() - this.getProcessedVolume());
+							}
+							i++;
+						}
+					}
+				}
+			}
+			else//SellSide
+			{
+				if(this.isLimitOrder())
+				{
+					if(this.isNewOrder())
+					{
+						sellSideOrders.add(this);
+					    Collections.sort(sellSideOrders);
+					}
+					else if(this.isFilled()||this.isCanceled())
+					{
+						int i = 0;
+						while(i < sellSideOrders.size())
+						{
+							if(this.getOrderID().equals(sellSideOrders.get(i).getOrderID()))
+							{
+								sellSideOrders.remove(i);
+							}
+							i++;
+						}
+					}
+					else if(this.isPartiallyFilled())
+					{
+						int i = 0;
+						while(i < sellSideOrders.size())
+						{
+							if(this.getOrderID().equals(sellSideOrders.get(i).getOrderID()))
+							{
+								sellSideOrders.get(i).setVolume(sellSideOrders.get(i).getVolume() - this.getProcessedVolume());
+							}
+							i++;
+						}
 					}
 				}
 			}
 		}
+		
 	}
 	
 	public void cancelFrom(PriorityQueue<Order> oBList)

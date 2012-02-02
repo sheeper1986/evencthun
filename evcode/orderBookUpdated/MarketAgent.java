@@ -1,4 +1,4 @@
-package orderBookUpdated51_1;
+package orderBookUpdated51_4;
 
 import java.util.*;
 
@@ -30,23 +30,23 @@ public class MarketAgent extends Agent
 	public static final AID marketAID = new AID("MarketAgent", AID.ISLOCALNAME);
 	public static final Ontology ontology = OrderBookOntology.getInstance();
 	public static final Codec codecI = new SLCodec();
-	public static PriorityQueue<Order> buySideOrders = new PriorityQueue<Order>();
-	public static PriorityQueue<Order> sellSideOrders = new PriorityQueue<Order>();
+	public static PriorityQueue<Order> buySideQueue = new PriorityQueue<Order>();
+	public static PriorityQueue<Order> sellSideQueue = new PriorityQueue<Order>();
 	protected ArrayList investorList = new ArrayList();  
 	protected int investorCount = 0;
 	
 	protected void setup()
 	{
-		System.out.println("This is updated51 " + getAID().getName());
+		System.out.println("This is updated51_4 " + getAID().getName());
 
 		getContentManager().registerLanguage(codecI, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 			
 		InitializeOrder io = new InitializeOrder();
-		io.initializeBuyOrder(buySideOrders, sellSideOrders, 100);
+		io.initializeBuyOrder(buySideQueue, sellSideQueue, 5);
 			
-		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideOrders.size());
-		System.out.println(getAID().getLocalName() + " LocalSellSellOrders: " + sellSideOrders.size());
+		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideQueue);
+		System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideQueue);
 			
 		addBehaviour(new InitOrderbookResponder());
 		addBehaviour(new OrderMatchEngine());
@@ -106,23 +106,29 @@ public class MarketAgent extends Agent
 					
 					if(orderRequestMsg.getPerformative() == ACLMessage.CFP)
 					{	
-						if(placedOrder.getSide() == 1)
+						if(placedOrder.isBuySide())
 						{
-							buySideOrders.add(placedOrder);	
-							
-							for (Iterator it = investorList.iterator();  it.hasNext();) 
-							{   
-								Action action = new Action(orderRequestMsg.getSender(), placedOrder);
-								ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-								replyOrderMsg.setOntology(ontology.getName());
-								replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-								myAgent.getContentManager().fillContent(replyOrderMsg, action);
-								replyOrderMsg.addReceiver((AID) it.next());
-								myAgent.send(replyOrderMsg);
-							}							
+							buySideQueue.add(placedOrder);	
+							if(placedOrder.isLimitOrder())
+							{
+								for (Iterator it = investorList.iterator();  it.hasNext();) 
+								{   
+									Action action = new Action(orderRequestMsg.getSender(), placedOrder);
+									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									replyOrderMsg.setOntology(ontology.getName());
+									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(replyOrderMsg, action);
+									replyOrderMsg.addReceiver((AID) it.next());
+									myAgent.send(replyOrderMsg);
+								}							
+							}
 							
 							ArrayList<Order> tempBuyOrders = new ArrayList<Order>();
-							BuySideMatchEngine matchEngine = new BuySideMatchEngine(buySideOrders,sellSideOrders);
+							BuySideMatchEngine matchEngine = new BuySideMatchEngine(buySideQueue,sellSideQueue);
+							
+							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
+							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
+							
 							tempBuyOrders.addAll(matchEngine.matchBuyOrders());
 							
 							int i = 0;
@@ -144,20 +150,27 @@ public class MarketAgent extends Agent
 						}
 						else//placedOrder Side Sell
 						{
-							sellSideOrders.add(placedOrder);
+							sellSideQueue.add(placedOrder);
+							if(placedOrder.isLimitOrder())
+							{
+								for (Iterator it = investorList.iterator();  it.hasNext();) 
+								{   
+									Action action = new Action(orderRequestMsg.getSender(), placedOrder);
+									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									replyOrderMsg.setOntology(ontology.getName());
+									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									myAgent.getContentManager().fillContent(replyOrderMsg, action);
+									replyOrderMsg.addReceiver((AID) it.next());
+									myAgent.send(replyOrderMsg);
+								}							
+							}
 							
-							for (Iterator it = investorList.iterator();  it.hasNext();) 
-							{   
-								Action action = new Action(orderRequestMsg.getSender(), placedOrder);
-								ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-								replyOrderMsg.setOntology(ontology.getName());
-								replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
-								myAgent.getContentManager().fillContent(replyOrderMsg, action);
-								replyOrderMsg.addReceiver((AID) it.next());
-								myAgent.send(replyOrderMsg);
-							}							
 							ArrayList<Order> tempSellOrders = new ArrayList<Order>();
-							SellSideMatchEngine matchEngine = new SellSideMatchEngine(sellSideOrders,buySideOrders);
+							SellSideMatchEngine matchEngine = new SellSideMatchEngine(sellSideQueue,buySideQueue);
+							
+							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
+							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
+							
 							tempSellOrders.addAll(matchEngine.matchSellOrders());
 							
 							int i = 0;
@@ -184,25 +197,25 @@ public class MarketAgent extends Agent
 						
 						if(placedOrder.getSide() == 1)
 				        {
-							placedOrder.cancelFrom(buySideOrders);
+							placedOrder.cancelFrom(buySideQueue);
 				        }
 						else
 						{
-							placedOrder.cancelFrom(sellSideOrders);
+							placedOrder.cancelFrom(sellSideQueue);
 						}
 						for (Iterator it = investorList.iterator();  it.hasNext();) 
 						{
 							Action action = new Action(orderRequestMsg.getSender(),placedOrder);
-							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.CONFIRM);
+							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.INFORM);
 							replyCancelMsg.setOntology(ontology.getName());
 							replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 							myAgent.getContentManager().fillContent(replyCancelMsg, action);
 							replyCancelMsg.addReceiver((AID) it.next());
 							myAgent.send(replyCancelMsg);
-						}							
+						}
+						System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
+						System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
 					}
-					//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders);
-					//System.out.println(getAID().getLocalName() + " SellSellOrders: " + sellSideOrders);
 				}
 				catch(CodecException ce){
 					ce.printStackTrace();
@@ -223,8 +236,8 @@ public class MarketAgent extends Agent
     	{
     		String investorI = "Ev";
     		String investorII = "Peter";
-		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated51_1.InvestorAgent", null);
-		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated51_1.InvestorAgentII", null);
+		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated51_4.InvestorAgent", null);
+		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated51_4.InvestorAgentII", null);
 		    investorContrallerI.start();
 		    investorContrallerII.start();
   

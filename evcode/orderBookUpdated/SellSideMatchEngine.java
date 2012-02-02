@@ -1,5 +1,6 @@
-package orderBookUpdated51_1;
+package orderBookUpdated51_4;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.PriorityQueue;
 
@@ -65,7 +66,7 @@ public class SellSideMatchEngine
 						
 						if(buySideOrders.peek() == null)
 						{
-							sellSideOrders.peek().setProcessedOrder(2, cumulatedVolume, cumulatedPrice/cumulatedVolume, System.currentTimeMillis());
+							sellSideOrders.peek().setProcessedOrder(2, cumulatedVolume, new BigDecimal(cumulatedPrice/cumulatedVolume).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue(), System.currentTimeMillis());
 							sellSideOrders.peek().setVolume(0);
 							processedOrders.add(sellSideOrders.poll());					
 							break;
@@ -79,7 +80,7 @@ public class SellSideMatchEngine
 								double totalPrice = cumulatedPrice + buySideOrders.peek().getPrice()*sellSideOrders.peek().getVolume();
 								int totalVolume = cumulatedVolume + sellSideOrders.peek().getVolume();
 							
-								sellSideOrders.peek().setProcessedOrder(1, totalVolume, totalPrice/totalVolume, System.currentTimeMillis());
+								sellSideOrders.peek().setProcessedOrder(1, totalVolume, new BigDecimal(totalPrice/totalVolume).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue(), System.currentTimeMillis());
 								sellSideOrders.peek().setVolume(0);
 								processedOrders.add(sellSideOrders.poll());			
 								
@@ -97,7 +98,7 @@ public class SellSideMatchEngine
 								double totalPrice = cumulatedPrice + buySideOrders.peek().getPrice()*sellSideOrders.peek().getVolume();
 								int totalVolume = cumulatedVolume + sellSideOrders.peek().getVolume();
 								
-								sellSideOrders.peek().setProcessedOrder(1, totalVolume, totalPrice/totalVolume, System.currentTimeMillis());
+								sellSideOrders.peek().setProcessedOrder(1, totalVolume, new BigDecimal(totalPrice/totalVolume).setScale(1, BigDecimal.ROUND_HALF_UP).doubleValue(), System.currentTimeMillis());
 								sellSideOrders.peek().setVolume(0);
 								processedOrders.add(sellSideOrders.poll());
 								
