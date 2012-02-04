@@ -1,4 +1,4 @@
-package orderBookUpdated51_4;
+package orderBookUpdated52_1;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -36,7 +36,7 @@ public class InvestorAgentII extends Agent
 
 	protected void setup()
 	{
-		System.out.println("This is updated51_4 " + getAID().getName());
+		System.out.println("This is updated52_1 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -59,8 +59,8 @@ public class InvestorAgentII extends Agent
     		sellSideOrdersII.addAll(MarketAgent.sellSideQueue);
     		Collections.sort(sellSideOrdersII);
     		
-    		System.out.println(getAID().getLocalName() + " LocalBuyOrdersII: " + buySideOrdersII);
-    		System.out.println(getAID().getLocalName() + " LocalSellOrdersII: " + sellSideOrdersII);
+    		System.out.println(getAID().getLocalName() + " LocalBuyOrdersII: " + buySideOrdersII.size());
+    		System.out.println(getAID().getLocalName() + " LocalSellOrdersII: " + sellSideOrdersII.size());
     		
 			ACLMessage tradingRequestMsg = new ACLMessage(ACLMessage.REQUEST);
 			tradingRequestMsg.setConversationId("TradingRequest");
@@ -156,7 +156,7 @@ public class InvestorAgentII extends Agent
 					
 					Strategy cancelStrategy = new Strategy();
 					ArrayList<Order> temp = new ArrayList<Order>();
-					temp.addAll(cancelStrategy.cancelOrders(pendingOrderListII, (buySideOrdersII.get(0).getPrice() + sellSideOrdersII.get(0).getPrice())/2, 0.8));
+					temp.addAll(cancelStrategy.cancelOrders(pendingOrderListII, (buySideOrdersII.get(0).getPrice() + sellSideOrdersII.get(0).getPrice())/2, 0.6));
 					if(temp.size() > 0)
 					{
 						int i = 0;
@@ -169,7 +169,7 @@ public class InvestorAgentII extends Agent
 							cancelRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 							myAgent.getContentManager().fillContent(cancelRequestMsg, actionI);
 							myAgent.send(cancelRequestMsg);	
-							System.out.println("Cancel " + temp.get(i));
+							System.out.println(getLocalName() + " Cancel " + temp.get(i));
 							i++;
 						}	
 					}				
@@ -212,8 +212,8 @@ public class InvestorAgentII extends Agent
 					    	System.out.println("Updated Pending ListII " + pendingOrderListII);
 				    	}
 				    }
-				    	System.out.println(getAID().getLocalName() + " BuyOrdersII: " + buySideOrdersII);
-				    	System.out.println(getAID().getLocalName() + " SellOrdersII: " + sellSideOrdersII);
+				    	System.out.println(getAID().getLocalName() + " BuyOrdersII: " + buySideOrdersII.size());
+				    	System.out.println(getAID().getLocalName() + " SellOrdersII: " + sellSideOrdersII.size());
 				}	
 				catch(CodecException ce){
 					ce.printStackTrace();

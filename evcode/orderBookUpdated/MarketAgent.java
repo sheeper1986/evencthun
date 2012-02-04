@@ -1,4 +1,4 @@
-package orderBookUpdated51_4;
+package orderBookUpdated52_1;
 
 import java.util.*;
 
@@ -34,6 +34,7 @@ public class MarketAgent extends Agent
 	public static PriorityQueue<Order> sellSideQueue = new PriorityQueue<Order>();
 	protected ArrayList investorList = new ArrayList();  
 	protected int investorCount = 0;
+	private ArrayList<Order> loggerList = new ArrayList<Order>();
 	
 	protected void setup()
 	{
@@ -43,10 +44,10 @@ public class MarketAgent extends Agent
 		getContentManager().registerOntology(ontology);
 			
 		InitializeOrder io = new InitializeOrder();
-		io.initializeBuyOrder(buySideQueue, sellSideQueue, 5);
+		io.initializeBuyOrder(buySideQueue, sellSideQueue, 1000);
 			
-		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideQueue);
-		System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideQueue);
+		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideQueue.size());
+		System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideQueue.size());
 			
 		addBehaviour(new InitOrderbookResponder());
 		addBehaviour(new OrderMatchEngine());
@@ -69,7 +70,7 @@ public class MarketAgent extends Agent
 	                investorCount++;
 	                System.out.println( "Investors (" + investorCount + " have arrived)" );
 
-	                if (investorCount == 2) 
+	                if (investorCount == 3) 
 	                {
 	                    System.out.println( "All investors are ready, now start......" );
 	                    for (Iterator it = investorList.iterator();  it.hasNext();) 
@@ -126,15 +127,18 @@ public class MarketAgent extends Agent
 							ArrayList<Order> tempBuyOrders = new ArrayList<Order>();
 							BuySideMatchEngine matchEngine = new BuySideMatchEngine(buySideQueue,sellSideQueue);
 							
-							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
-							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
-							
 							tempBuyOrders.addAll(matchEngine.matchBuyOrders());
+							
+							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue.size());
+							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue.size());
 							
 							int i = 0;
 							while(i < tempBuyOrders.size())
 							{
-								//currentPrice = tempBuyOrder.get(i).getDealingPrice();							
+								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
+								loggerList.add(tempBuyOrders.get(i));
+								ExecutionReport report = new ExecutionReport(loggerList);
+								report.createHistoryLogger();
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrders.get(i));
@@ -168,15 +172,18 @@ public class MarketAgent extends Agent
 							ArrayList<Order> tempSellOrders = new ArrayList<Order>();
 							SellSideMatchEngine matchEngine = new SellSideMatchEngine(sellSideQueue,buySideQueue);
 							
-							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
-							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
-							
 							tempSellOrders.addAll(matchEngine.matchSellOrders());
+							
+							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue.size());
+							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue.size());
 							
 							int i = 0;
 							while(i < tempSellOrders.size())
 							{
-								//currentPrice = tempBuyOrder.get(i).getDealingPrice();							
+								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
+								loggerList.add(tempSellOrders.get(i));
+								ExecutionReport report = new ExecutionReport(loggerList);
+								report.createHistoryLogger();
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempSellOrders.get(i));
@@ -213,8 +220,8 @@ public class MarketAgent extends Agent
 							replyCancelMsg.addReceiver((AID) it.next());
 							myAgent.send(replyCancelMsg);
 						}
-						System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
-						System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
+						//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
+						//System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue);
 					}
 				}
 				catch(CodecException ce){
@@ -234,15 +241,19 @@ public class MarketAgent extends Agent
     	PlatformController container = getContainerController(); // get a container controller for creating new agents
     	try 
     	{
-    		String investorI = "Ev";
-    		String investorII = "Peter";
-		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated51_4.InvestorAgent", null);
-		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated51_4.InvestorAgentII", null);
+    		String investor = "Ev";
+    		String investorI = "Peter";
+    		String investorII = "Mike";
+		    AgentController investorContraller = container.createNewAgent(investor, "orderBookUpdated52_1.InvestorAgent", null);
+		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated52_1.InvestorAgentII", null);
+		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated52_1.InvestorAgentI", null);
+		    investorContraller.start();
 		    investorContrallerI.start();
 		    investorContrallerII.start();
   
+		    investorList.add(new AID(investor, AID.ISLOCALNAME));
 		    investorList.add(new AID(investorI, AID.ISLOCALNAME));
-		    investorList.add(new AID(investorII, AID.ISLOCALNAME));            
+		    investorList.add(new AID(investorII, AID.ISLOCALNAME));  
         }
         catch (Exception e) {
             System.err.println( "Exception while adding investors: " + e );
