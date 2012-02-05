@@ -70,7 +70,7 @@ public class MarketAgent extends Agent
 	                investorCount++;
 	                System.out.println( "Investors (" + investorCount + " have arrived)" );
 
-	                if (investorCount == 3) 
+	                if (investorCount == 4) 
 	                {
 	                    System.out.println( "All investors are ready, now start......" );
 	                    for (Iterator it = investorList.iterator();  it.hasNext();) 
@@ -137,8 +137,8 @@ public class MarketAgent extends Agent
 							{
 								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
 								loggerList.add(tempBuyOrders.get(i));
-								ExecutionReport report = new ExecutionReport(loggerList);
-								report.createHistoryLogger();
+								ExecutionReport report = new ExecutionReport();
+								report.createHistoryOrderLogger(loggerList);
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrders.get(i));
@@ -182,8 +182,8 @@ public class MarketAgent extends Agent
 							{
 								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
 								loggerList.add(tempSellOrders.get(i));
-								ExecutionReport report = new ExecutionReport(loggerList);
-								report.createHistoryLogger();
+								ExecutionReport report = new ExecutionReport();
+								report.createHistoryOrderLogger(loggerList);
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempSellOrders.get(i));
@@ -241,19 +241,23 @@ public class MarketAgent extends Agent
     	PlatformController container = getContainerController(); // get a container controller for creating new agents
     	try 
     	{
-    		String investor = "Ev";
-    		String investorI = "Peter";
-    		String investorII = "Mike";
-		    AgentController investorContraller = container.createNewAgent(investor, "orderBookUpdated52_1.InvestorAgent", null);
-		    AgentController investorContrallerI = container.createNewAgent(investorI, "orderBookUpdated52_1.InvestorAgentII", null);
-		    AgentController investorContrallerII = container.createNewAgent(investorII, "orderBookUpdated52_1.InvestorAgentI", null);
+    		String noiseTrader = "Ev";
+    		String noiseTraderI = "Peter";
+    		String noiseTraderII = "Mike";
+    		String vwapTrader = "VWAPTrader";
+		    AgentController investorContraller = container.createNewAgent(noiseTrader, "orderBookUpdated52_1.NoiseTrader", null);
+		    AgentController investorContrallerI = container.createNewAgent(noiseTraderI, "orderBookUpdated52_1.NoiseTraderI", null);
+		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_1.NoiseTraderII", null);
+		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_1.VWAPTrader", null);
 		    investorContraller.start();
 		    investorContrallerI.start();
 		    investorContrallerII.start();
+		    investorContrallerIV.start();
   
-		    investorList.add(new AID(investor, AID.ISLOCALNAME));
-		    investorList.add(new AID(investorI, AID.ISLOCALNAME));
-		    investorList.add(new AID(investorII, AID.ISLOCALNAME));  
+		    investorList.add(new AID(noiseTrader, AID.ISLOCALNAME));
+		    investorList.add(new AID(noiseTraderI, AID.ISLOCALNAME));
+		    investorList.add(new AID(noiseTraderII, AID.ISLOCALNAME)); 
+		    investorList.add(new AID(vwapTrader, AID.ISLOCALNAME));  
         }
         catch (Exception e) {
             System.err.println( "Exception while adding investors: " + e );

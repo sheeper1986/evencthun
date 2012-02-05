@@ -25,6 +25,10 @@ public class VWAPTrader extends Agent
 	private LinkedList<Order> buySideOrdersIV = new LinkedList<Order>();
 	private LinkedList<Order> sellSideOrdersIV = new LinkedList<Order>();
 	private RandomGenerator rg = new RandomGenerator();
+	private ArrayList<VWAP> vwapList = new ArrayList<VWAP>();
+	private double totalPrice = 0;
+	private int totalVolume = 0;
+	private double currentVWAP = totalPrice/totalVolume;
 
 	protected void setup()
 	{
@@ -36,7 +40,7 @@ public class VWAPTrader extends Agent
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
     	LogonMarket.addSubBehaviour(new TradingRequest());
     	LogonMarket.addSubBehaviour(new TradingPermission());
-    	LogonMarket.addSubBehaviour(new vwapTradeBehaviour(this,1000));
+    	//LogonMarket.addSubBehaviour(new vwapTradeBehaviour(this,1000));
     		
     	addBehaviour(LogonMarket);
     	addBehaviour(new LocalOrderManager());
@@ -88,7 +92,7 @@ public class VWAPTrader extends Agent
 		}
 	}
 	
-	private class vwapTradeBehaviour extends TickerBehaviour
+	/*private class vwapTradeBehaviour extends TickerBehaviour
 	{
 
 		public vwapTradeBehaviour(Agent a, long period) {
@@ -102,15 +106,7 @@ public class VWAPTrader extends Agent
 			
 		}
 		
-	}
-	
-	
-	
-	
-	
-	
-	
-	
+	}*/
 	
 	private class LocalOrderManager extends CyclicBehaviour
 	{
@@ -135,14 +131,27 @@ public class VWAPTrader extends Agent
 				    {
 				    	orderInfomation.updateLocalOrderbook(buySideOrdersIV, sellSideOrdersIV);
 				    	
+				    	if(orderInfomation.isLimitOrder()&&(!orderInfomation.isNewOrder()))
+				    	{
+				    		totalPrice += orderInfomation.getProcessedVolume()*orderInfomation.getDealingPrice();
+					    	totalVolume += orderInfomation.getProcessedVolume();
+					    	VWAP v = new VWAP();
+					    	v.calculateVWAP(orderInfomation, vwapList, totalPrice, totalVolume);
+					    	//v.setVwapPrice(totalPrice/totalVolume);
+					    	//v.setVwapTime(orderInfomation.getOpenTime());
+					    	//vwapList.add(v);
+					    	ExecutionReport  vr = new ExecutionReport ();
+					    	vr.createHistoryVWAPLogger(vwapList);
+				    	}
+				    	
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
 				    	{
 				    		orderInfomation.updatePendingOrderList(pendingOrderListIV);
 					    	System.out.println("Updated Pending List " + pendingOrderListIV);
 				    	}
 				    }
-				    	System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrdersIV.size());
-				    	System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideOrdersIV.size());
+				    	System.out.println(getAID().getLocalName() + " BuyOrdersIV: " + buySideOrdersIV.size());
+				    	System.out.println(getAID().getLocalName() + " SellOrdersIV: " + sellSideOrdersIV.size());
 				}	
 				catch(CodecException ce){
 					ce.printStackTrace();

@@ -26,7 +26,7 @@ import jade.lang.acl.MessageTemplate;
 
 import java.util.*;
 
-public class InvestorAgentI extends Agent
+public class NoiseTraderI extends Agent
 {
 	private int id = 0;
 	private ArrayList<Order> pendingOrderListI = new ArrayList<Order>();
