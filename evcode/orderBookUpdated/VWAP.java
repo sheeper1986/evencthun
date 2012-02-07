@@ -1,4 +1,4 @@
-package orderBookUpdated52_1;
+package orderBookUpdated52_2;
 
 import java.util.ArrayList;
 
@@ -6,16 +6,15 @@ public class VWAP
 {
 	private double vwapPrice;
 	private Long vwapTime;
+	private ArrayList<Order> orderList;
 	
 	public VWAP()
 	{
-
+		this(new ArrayList<Order>());
 	}
-	
-	public VWAP(double vwapPrice, Long vwapTime)
+	public VWAP(ArrayList<Order> orderList)
 	{
-		this.vwapPrice = vwapPrice;
-		this.vwapTime = vwapTime;
+		this.orderList = orderList;
 	}
 	
 	public void setVwapPrice(double vwapPrice)
@@ -44,7 +43,6 @@ public class VWAP
 		v.setVwapPrice(totalPrice/totalVolume);
 		v.setVwapTime(order.getOpenTime());
 		vwapList.add(v);
-		//return vwapList;
 	}
 	
 	public String toString()

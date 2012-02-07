@@ -1,4 +1,4 @@
-package orderBookUpdated52_1;
+package orderBookUpdated52_2;
 
 import jade.core.Agent;
 
@@ -23,40 +23,6 @@ public class Strategy
 	{
 		
 	}
-	
-	//public Strategy(InvestorAgent a)
-	//{
-		//this.a = a;
-	//}
-	/*public Strategy(PriorityQueue<Order> oBBList, PriorityQueue<Order> oBSList, int trigger)
-	{
-		this.oBBList = oBBList;
-		this.oBSList = oBSList;
-		this.trigger = trigger;
-	}
-	
-	public void setListAndTrigger(PriorityQueue<Order> oBBList, PriorityQueue<Order> oBSList, int trigger)
-	{
-		this.oBBList = oBBList;
-		this.oBSList = oBSList;
-		this.trigger = trigger;
-	}
-	
-	public PriorityQueue<Order> getOBBList()
-	{
-		return oBBList;
-	}
-	
-	public PriorityQueue<Order> getOBSList()
-	{
-		return oBSList;
-	}
-	
-	public int getTrigger()
-	{
-		return trigger;
-	}*/
-
 	
 	public ArrayList<Order> cancelOrders(ArrayList<Order> pOList, double price, double spread)
 	{

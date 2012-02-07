@@ -1,4 +1,4 @@
-package orderBookUpdated52_1;
+package orderBookUpdated52_2;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -36,7 +36,7 @@ public class NoiseTrader extends Agent
 
 	protected void setup()
 	{
-		System.out.println("This is updated52_1 " + getAID().getName());
+		System.out.println("This is updated52_2 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -111,38 +111,8 @@ public class NoiseTrader extends Agent
 				
 				if(buySideOrders.size() > 0 && sellSideOrders.size() > 0)
 				{
-					Order newOrder = new Order();					
-					newOrder.setOrderType(rg.randomType(40));				
-					if(newOrder.getOrderType() == 1)
-					{
-						newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
-						newOrder.setSymbol("GOOGLE");
-						newOrder.setSide(rg.randomSide(50));
-						newOrder.setVolume(rg.randomVolume(10, 190));
-						newOrder.setOpenTime(System.currentTimeMillis());
-					}
-					else if(newOrder.getOrderType() == 2)
-					{
-						newOrder.setSide(rg.randomSide(50));
-						
-						if(newOrder.getSide() == 1)
-						{
-							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
-							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(10, 190));
-							newOrder.setPrice(rg.randomBidPrice(buySideOrders.get(0).getPrice()));
-							newOrder.setOpenTime(System.currentTimeMillis());
-						}
-						else
-						{
-							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
-							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(10, 200));
-							newOrder.setPrice(rg.randomAskPrice(sellSideOrders.get(0).getPrice()));
-							newOrder.setOpenTime(System.currentTimeMillis());
-						}	
-					}
-					
+					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
+					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), orderID);
 					pendingOrderList.add(newOrder);
 					System.out.println("Pending orders " + pendingOrderList);
 					

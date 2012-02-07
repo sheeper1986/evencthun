@@ -1,4 +1,4 @@
-package orderBookUpdated52_1;
+package orderBookUpdated52_2;
 
 import java.util.*;
 
@@ -38,13 +38,12 @@ public class MarketAgent extends Agent
 	
 	protected void setup()
 	{
-		System.out.println("This is updated51_4 " + getAID().getName());
+		System.out.println("This is updated52_2 " + getAID().getName());
 
 		getContentManager().registerLanguage(codecI, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 			
-		InitializeOrder io = new InitializeOrder();
-		io.initializeBuyOrder(buySideQueue, sellSideQueue, 1000);
+		new InitializeOrder().initOrderbook(buySideQueue, sellSideQueue, 1000);
 			
 		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideQueue.size());
 		System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideQueue.size());
@@ -245,10 +244,10 @@ public class MarketAgent extends Agent
     		String noiseTraderI = "Peter";
     		String noiseTraderII = "Mike";
     		String vwapTrader = "VWAPTrader";
-		    AgentController investorContraller = container.createNewAgent(noiseTrader, "orderBookUpdated52_1.NoiseTrader", null);
-		    AgentController investorContrallerI = container.createNewAgent(noiseTraderI, "orderBookUpdated52_1.NoiseTraderI", null);
-		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_1.NoiseTraderII", null);
-		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_1.VWAPTrader", null);
+		    AgentController investorContraller = container.createNewAgent(noiseTrader, "orderBookUpdated52_2.NoiseTrader", null);
+		    AgentController investorContrallerI = container.createNewAgent(noiseTraderI, "orderBookUpdated52_2.NoiseTraderI", null);
+		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_2.NoiseTraderII", null);
+		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_2.VWAPTrader", null);
 		    investorContraller.start();
 		    investorContrallerI.start();
 		    investorContrallerII.start();

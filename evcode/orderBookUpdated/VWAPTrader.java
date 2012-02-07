@@ -1,4 +1,4 @@
-package orderBookUpdated52_1;
+package orderBookUpdated52_2;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec.CodecException;
@@ -29,6 +29,9 @@ public class VWAPTrader extends Agent
 	private double totalPrice = 0;
 	private int totalVolume = 0;
 	private double currentVWAP = totalPrice/totalVolume;
+	private final Long startTradingTime = System.currentTimeMillis();
+	private final Long endTradingTime = (long) (1000*60);
+	private int aimedVolume = 100000;
 
 	protected void setup()
 	{
@@ -40,7 +43,8 @@ public class VWAPTrader extends Agent
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
     	LogonMarket.addSubBehaviour(new TradingRequest());
     	LogonMarket.addSubBehaviour(new TradingPermission());
-    	//LogonMarket.addSubBehaviour(new vwapTradeBehaviour(this,1000));
+    	LogonMarket.addSubBehaviour(new vwapTradeStageI(this,1000));
+    	LogonMarket.addSubBehaviour(new vwapTradeStageII());
     		
     	addBehaviour(LogonMarket);
     	addBehaviour(new LocalOrderManager());
@@ -92,10 +96,10 @@ public class VWAPTrader extends Agent
 		}
 	}
 	
-	/*private class vwapTradeBehaviour extends TickerBehaviour
+	private class vwapTradeStageI extends TickerBehaviour
 	{
 
-		public vwapTradeBehaviour(Agent a, long period) {
+		public vwapTradeStageI(Agent a, long period) {
 			super(a, period);
 			// TODO Auto-generated constructor stub
 		}
@@ -103,10 +107,23 @@ public class VWAPTrader extends Agent
 		@Override
 		protected void onTick() {
 			// TODO Auto-generated method stub
+			if(System.currentTimeMillis() >= startTradingTime + endTradingTime)
+			{
+				stop();
+			}
+		}
+	}
+	
+	private class vwapTradeStageII extends OneShotBehaviour
+	{
+
+		@Override
+		public void action() {
+			// TODO Auto-generated method stub
 			
 		}
 		
-	}*/
+	}
 	
 	private class LocalOrderManager extends CyclicBehaviour
 	{

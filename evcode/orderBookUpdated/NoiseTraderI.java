@@ -1,4 +1,4 @@
-package orderBookUpdated52_1;
+package orderBookUpdated52_2;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -36,7 +36,7 @@ public class NoiseTraderI extends Agent
 
 	protected void setup()
 	{
-		System.out.println("This is updated52_1 " + getAID().getName());
+		System.out.println("This is updated52_2 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -118,7 +118,7 @@ public class NoiseTraderI extends Agent
 						newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 						newOrder.setSymbol("GOOGLE");
 						newOrder.setSide(rg.randomSide(50));
-						newOrder.setVolume(rg.randomVolume(10, 190));
+						newOrder.setVolume(rg.randomVolume(1, 200));
 						newOrder.setOpenTime(System.currentTimeMillis());
 					}
 					else if(newOrder.getOrderType() == 2)
@@ -129,7 +129,7 @@ public class NoiseTraderI extends Agent
 						{
 							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(10, 190));
+							newOrder.setVolume(rg.randomVolume(1, 200));
 							newOrder.setPrice(rg.randomBidPrice(buySideOrdersI.get(0).getPrice()));
 							newOrder.setOpenTime(System.currentTimeMillis());
 						}
@@ -137,7 +137,7 @@ public class NoiseTraderI extends Agent
 						{
 							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
 							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(10, 200));
+							newOrder.setVolume(rg.randomVolume(1, 200));
 							newOrder.setPrice(rg.randomAskPrice(sellSideOrdersI.get(0).getPrice()));
 							newOrder.setOpenTime(System.currentTimeMillis());
 						}	
