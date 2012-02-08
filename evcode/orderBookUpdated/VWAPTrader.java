@@ -14,6 +14,7 @@ import jade.domain.FIPANames;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -28,10 +29,13 @@ public class VWAPTrader extends Agent
 	private ArrayList<VWAP> vwapList = new ArrayList<VWAP>();
 	private double totalPrice = 0;
 	private int totalVolume = 0;
-	private double currentVWAP = totalPrice/totalVolume;
-	private final Long startTradingTime = System.currentTimeMillis();
-	private final Long endTradingTime = (long) (1000*60);
-	private int aimedVolume = 100000;
+	private double currentVWAP = 0;
+	private final long START_TIME = System.currentTimeMillis();
+	private final long FINAL_TIME = 1000*60*6;
+	private long passedTime = 0;
+	private final long TIME_SLOT = 1000*36;
+	private final long TRADE_FREQUENCY = 1000*6;
+	private int aimedVolume = 10000;
 
 	protected void setup()
 	{
@@ -43,8 +47,8 @@ public class VWAPTrader extends Agent
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
     	LogonMarket.addSubBehaviour(new TradingRequest());
     	LogonMarket.addSubBehaviour(new TradingPermission());
-    	LogonMarket.addSubBehaviour(new vwapTradeStageI(this,1000));
-    	LogonMarket.addSubBehaviour(new vwapTradeStageII());
+    	LogonMarket.addSubBehaviour(new VWAPTradeBehaviour(this,TRADE_FREQUENCY));
+    	//LogonMarket.addSubBehaviour(new vwapTradeStageII());
     		
     	addBehaviour(LogonMarket);
     	addBehaviour(new LocalOrderManager());
@@ -96,34 +100,63 @@ public class VWAPTrader extends Agent
 		}
 	}
 	
-	private class vwapTradeStageI extends TickerBehaviour
+	private class VWAPTradeBehaviour extends TickerBehaviour
 	{
-
-		public vwapTradeStageI(Agent a, long period) {
+		Long tradingTime = START_TIME;
+		public VWAPTradeBehaviour(Agent a, long period) 
+		{
 			super(a, period);
-			// TODO Auto-generated constructor stub
 		}
 
-		@Override
-		protected void onTick() {
-			// TODO Auto-generated method stub
-			if(System.currentTimeMillis() >= startTradingTime + endTradingTime)
+		protected void onTick() 
+		{
+			try
+			{
+				if(currentVWAP !=0 )
+				{
+					Order order = new InitializeOrder().createVWAPSellOrder(aimedVolume, TRADE_FREQUENCY, FINAL_TIME - passedTime, getLocalName()+ String.valueOf(id++), currentVWAP);
+						
+					Action action = new Action(MarketAgent.marketAID, order);
+					ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.CFP);
+					orderRequestMsg.addReceiver(MarketAgent.marketAID);
+					orderRequestMsg.setOntology(MarketAgent.ontology.getName());
+					orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+					myAgent.getContentManager().fillContent(orderRequestMsg, action);
+					myAgent.send(orderRequestMsg);	
+					
+					pendingOrderListIV.add(order);
+					System.out.println("Pending orders VWAP " + pendingOrderListIV);
+				}
+					
+				} catch (CodecException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (OntologyException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			
+			if(System.currentTimeMillis() >= tradingTime + TIME_SLOT)
+			{
+				System.out.println("recycling orders");//check
+				tradingTime += TIME_SLOT;
+				passedTime += TIME_SLOT;
+			}
+			if(System.currentTimeMillis() >= START_TIME + FINAL_TIME)
 			{
 				stop();
 			}
 		}
 	}
 	
-	private class vwapTradeStageII extends OneShotBehaviour
+	/*private class vwapTradeStageII extends OneShotBehaviour
 	{
-
-		@Override
 		public void action() {
-			// TODO Auto-generated method stub
+
 			
 		}
 		
-	}
+	}*/
 	
 	private class LocalOrderManager extends CyclicBehaviour
 	{
@@ -148,10 +181,11 @@ public class VWAPTrader extends Agent
 				    {
 				    	orderInfomation.updateLocalOrderbook(buySideOrdersIV, sellSideOrdersIV);
 				    	
-				    	if(orderInfomation.isLimitOrder()&&(!orderInfomation.isNewOrder()))
+				    	if(orderInfomation.isLimitOrder()&&(orderInfomation.isFilled()||orderInfomation.isPartiallyFilled()))
 				    	{
 				    		totalPrice += orderInfomation.getProcessedVolume()*orderInfomation.getDealingPrice();
 					    	totalVolume += orderInfomation.getProcessedVolume();
+					    	currentVWAP = new BigDecimal(totalPrice/totalVolume).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 					    	VWAP v = new VWAP();
 					    	v.calculateVWAP(orderInfomation, vwapList, totalPrice, totalVolume);
 					    	//v.setVwapPrice(totalPrice/totalVolume);
@@ -164,7 +198,12 @@ public class VWAPTrader extends Agent
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
 				    	{
 				    		orderInfomation.updatePendingOrderList(pendingOrderListIV);
-					    	System.out.println("Updated Pending List " + pendingOrderListIV);
+				    		if(orderInfomation.isFilled()||orderInfomation.isPartiallyFilled())
+				    		{
+				    			aimedVolume-=orderInfomation.getProcessedVolume();
+				    		}
+					    	System.out.println("Updated Pending List VWAP " + pendingOrderListIV);
+					    	System.out.println("Volume left: " + aimedVolume);
 				    	}
 				    }
 				    	System.out.println(getAID().getLocalName() + " BuyOrdersIV: " + buySideOrdersIV.size());

@@ -12,12 +12,10 @@ public class InitializeOrder
 	private final int MARKET = 1;
 	private final int LIMIT = 2;
 	private RandomGenerator rg;
-	private ArrayList<Order> orderList;
 	
 	public InitializeOrder()
 	{
 		this.rg = new RandomGenerator();
-		this.orderList = new ArrayList<Order>();
 	}
 
 	public void initOrderbook(PriorityQueue<Order> buySO, PriorityQueue<Order> sellSO, int orderQuantitiy)
@@ -58,8 +56,6 @@ public class InitializeOrder
 		if(order.isMarketOrder())
 		{
 			order.setSide(rg.randomSide(50));
-			order.setVolume(rg.randomVolume(1, 200));
-			order.setOpenTime(System.currentTimeMillis());
 		}
 		else//is limit
 		{
@@ -67,38 +63,36 @@ public class InitializeOrder
 			
 			if(order.isBuySide())
 			{
-				
 				order.setPrice(rg.randomBidPrice(bestBidPrice));
 			}
 			else//SellSide
 			{
 				order.setPrice(rg.randomAskPrice(BestAskPrice));
 			}	
-			order.setVolume(rg.randomVolume(1, 200));
-			order.setOpenTime(System.currentTimeMillis());
 		}
+		order.setVolume(rg.randomVolume(1, 200));
+		order.setOpenTime(System.currentTimeMillis());
+		
 		return order;
 	}
 	
-	public ArrayList<Order> createVWAPOrders(int volumeForSale, int frequency, int timeSolt, String orderID)
+	public Order createVWAPSellOrder(int totalVolume, long frequency, long timeLeft, String orderID, double VWAP)
 	{
-		ArrayList<Integer> volumeList = new VolumeCutter().getVolumeList(volumeForSale, frequency, timeSolt);
-		for(int i = 0; i < volumeList.size(); i++)
+		int vwapVolume = new VWAPVolume().getPendingVolume(totalVolume, frequency, timeLeft);
+		
+		Order order = new Order();	
+		order.setOrderID(orderID);
+		order.setSymbol("GOOGLE");
+		order.setSide(SELL);
+		order.setOrderType(rg.randomType(40));
+		if(order.isLimitOrder())
 		{
-			Order order = new Order();	
-			order.setOrderID(orderID);
-			order.setSymbol("GOOGLE");
-			order.setSide(SELL);
-			order.setOrderType(rg.randomType(40));
-			//if(order.isLimitOrder())
-			//{
-				//double myPrice =  new BigDecimal(VWAPPrice*1.002).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-				//order.setPrice(myPrice);
-			//}
-			order.setVolume(volumeList.get(i));
-			order.setOpenTime(System.currentTimeMillis());
-			orderList.add(order);
+			double myPrice =  new BigDecimal(VWAP*1.002).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+			order.setPrice(myPrice);
 		}
-		return orderList;
+		order.setVolume(vwapVolume);
+		order.setOpenTime(System.currentTimeMillis());
+		return order;
 	}
 }
+

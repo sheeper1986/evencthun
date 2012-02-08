@@ -113,8 +113,6 @@ public class NoiseTrader extends Agent
 				{
 					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
 					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), orderID);
-					pendingOrderList.add(newOrder);
-					System.out.println("Pending orders " + pendingOrderList);
 					
 					Action action = new Action(MarketAgent.marketAID, newOrder);
 					ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.CFP);
@@ -122,7 +120,10 @@ public class NoiseTrader extends Agent
 					orderRequestMsg.setOntology(MarketAgent.ontology.getName());
 					orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 					myAgent.getContentManager().fillContent(orderRequestMsg, action);
-					myAgent.send(orderRequestMsg);	
+					myAgent.send(orderRequestMsg);
+					
+					pendingOrderList.add(newOrder);
+					System.out.println("Pending orders " + pendingOrderList);
 					
 					Strategy cancelStrategy = new Strategy();
 					ArrayList<Order> temp = new ArrayList<Order>();
