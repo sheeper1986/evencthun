@@ -111,40 +111,8 @@ public class NoiseTraderII extends Agent
 				
 				if(buySideOrdersII.size() > 0 && sellSideOrdersII.size() > 0)
 				{
-					Order newOrder = new Order();					
-					newOrder.setOrderType(rg.randomType(40));				
-					if(newOrder.getOrderType() == 1)
-					{
-						newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
-						newOrder.setSymbol("GOOGLE");
-						newOrder.setSide(rg.randomSide(50));
-						newOrder.setVolume(rg.randomVolume(1, 200));
-						newOrder.setOpenTime(System.currentTimeMillis());
-					}
-					else if(newOrder.getOrderType() == 2)
-					{
-						newOrder.setSide(rg.randomSide(50));
-						
-						if(newOrder.getSide() == 1)
-						{
-							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
-							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(1, 200));
-							newOrder.setPrice(rg.randomBidPrice(buySideOrdersII.get(0).getPrice()));
-							newOrder.setOpenTime(System.currentTimeMillis());
-						}
-						else
-						{
-							newOrder.setOrderID(myAgent.getAID().getLocalName()+String.valueOf(id++));
-							newOrder.setSymbol("GOOGLE");
-							newOrder.setVolume(rg.randomVolume(10, 200));
-							newOrder.setPrice(rg.randomAskPrice(sellSideOrdersII.get(0).getPrice()));
-							newOrder.setOpenTime(System.currentTimeMillis());
-						}	
-					}
-					
-					pendingOrderListII.add(newOrder);
-					System.out.println("Pending ordersII " + pendingOrderListII);
+					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
+					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrdersII.get(0).getPrice(), sellSideOrdersII.get(0).getPrice(), orderID);
 					
 					Action action = new Action(MarketAgent.marketAID, newOrder);
 					ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.CFP);
@@ -152,27 +120,28 @@ public class NoiseTraderII extends Agent
 					orderRequestMsg.setOntology(MarketAgent.ontology.getName());
 					orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 					myAgent.getContentManager().fillContent(orderRequestMsg, action);
-					myAgent.send(orderRequestMsg);	
+					myAgent.send(orderRequestMsg);
 					
-					Strategy cancelStrategy = new Strategy();
-					ArrayList<Order> temp = new ArrayList<Order>();
-					temp.addAll(cancelStrategy.cancelOrders(pendingOrderListII, (buySideOrdersII.get(0).getPrice() + sellSideOrdersII.get(0).getPrice())/2, 0.6));
-					if(temp.size() > 0)
+					pendingOrderListII.add(newOrder);
+					//System.out.println("Pending ordersII " + pendingOrderListII);
+					
+					ArrayList<Order> cancelList = new ManageOrders().cancelOrders(pendingOrderListII, (buySideOrdersII.get(0).getPrice() + sellSideOrdersII.get(0).getPrice())/2, 0.6);
+					if(cancelList.size() > 0)
 					{
 						int i = 0;
-						while(i < temp.size())
+						while(i < cancelList.size())
 						{
-							Action actionI = new Action(MarketAgent.marketAID, temp.get(i));
+							Action actionI = new Action(MarketAgent.marketAID, cancelList.get(i));
 							ACLMessage cancelRequestMsg = new ACLMessage(ACLMessage.CANCEL);
 							cancelRequestMsg.addReceiver(MarketAgent.marketAID);
 							cancelRequestMsg.setOntology(MarketAgent.ontology.getName());
 							cancelRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 							myAgent.getContentManager().fillContent(cancelRequestMsg, actionI);
 							myAgent.send(cancelRequestMsg);	
-							System.out.println(getLocalName() + " Cancel " + temp.get(i));
+							//System.out.println(getLocalName() + " Cancel " + cancelList.get(i));
 							i++;
 						}	
-					}				
+					}			
 				}
 			
 				reset(randomTime);
@@ -204,12 +173,12 @@ public class NoiseTraderII extends Agent
 				    
 				    if(processedOrderMsg.getPerformative() == ACLMessage.INFORM)
 				    {
-				    	orderInfomation.updateLocalOrderbook(buySideOrdersII, sellSideOrdersII);
+				    	new ManageOrders(orderInfomation).updateLocalOrderbook(buySideOrdersII, sellSideOrdersII);
 				    	
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
 				    	{
-				    		orderInfomation.updatePendingOrderList(pendingOrderListII);
-					    	System.out.println("Updated Pending ListII " + pendingOrderListII);
+				    		new ManageOrders(orderInfomation).updatePendingOrderList(pendingOrderListII);
+					    	//System.out.println("Updated Pending ListII " + pendingOrderListII);
 				    	}
 				    }
 				    	System.out.println(getAID().getLocalName() + " BuyOrdersII: " + buySideOrdersII.size());

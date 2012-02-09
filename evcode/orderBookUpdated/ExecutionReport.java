@@ -44,10 +44,11 @@ public class ExecutionReport
             BufferedWriter out = new BufferedWriter(fstream);
             for (VWAP vwap:historyVWAP){
             	
-                double vwapPrice = vwap.getVwapPrice();
-                Long vwapTime = vwap.getVwapTime();
+                double marketVWAP = vwap.getMarketVWAP();
+                double traderVWAP = vwap.getTraderVWAP();
+                Long vwapTime = vwap.getTime();
                
-                out.write(Double.toString(vwapPrice) + " , " + Long.toString(vwapTime));
+                out.write(Double.toString(marketVWAP) + " , " + Double.toString(traderVWAP) + " , " + Long.toString(vwapTime));
                 out.newLine();
             }
             out.close();

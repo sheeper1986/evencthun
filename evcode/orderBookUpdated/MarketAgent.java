@@ -34,7 +34,7 @@ public class MarketAgent extends Agent
 	public static PriorityQueue<Order> sellSideQueue = new PriorityQueue<Order>();
 	protected ArrayList investorList = new ArrayList();  
 	protected int investorCount = 0;
-	private ArrayList<Order> loggerList = new ArrayList<Order>();
+	//private ArrayList<Order> loggerList = new ArrayList<Order>();
 	
 	protected void setup()
 	{
@@ -135,9 +135,9 @@ public class MarketAgent extends Agent
 							while(i < tempBuyOrders.size())
 							{
 								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
-								loggerList.add(tempBuyOrders.get(i));
-								ExecutionReport report = new ExecutionReport();
-								report.createHistoryOrderLogger(loggerList);
+								//loggerList.add(tempBuyOrders.get(i));
+								//ExecutionReport report = new ExecutionReport();
+								//report.createHistoryOrderLogger(loggerList);
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrders.get(i));
@@ -180,9 +180,9 @@ public class MarketAgent extends Agent
 							while(i < tempSellOrders.size())
 							{
 								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
-								loggerList.add(tempSellOrders.get(i));
-								ExecutionReport report = new ExecutionReport();
-								report.createHistoryOrderLogger(loggerList);
+								//loggerList.add(tempSellOrders.get(i));
+								//ExecutionReport report = new ExecutionReport();
+								//report.createHistoryOrderLogger(loggerList);
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempSellOrders.get(i));
@@ -203,11 +203,11 @@ public class MarketAgent extends Agent
 						
 						if(placedOrder.getSide() == 1)
 				        {
-							placedOrder.cancelFrom(buySideQueue);
+							new ManageOrders(placedOrder).cancelFrom(buySideQueue);
 				        }
 						else
 						{
-							placedOrder.cancelFrom(sellSideQueue);
+							new ManageOrders(placedOrder).cancelFrom(sellSideQueue);
 						}
 						for (Iterator it = investorList.iterator();  it.hasNext();) 
 						{
@@ -249,8 +249,8 @@ public class MarketAgent extends Agent
 		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_2.NoiseTraderII", null);
 		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_2.VWAPTrader", null);
 		    investorContraller.start();
-		    investorContrallerI.start();
-		    investorContrallerII.start();
+		    //investorContrallerI.start();
+		    //investorContrallerII.start();
 		    investorContrallerIV.start();
   
 		    investorList.add(new AID(noiseTrader, AID.ISLOCALNAME));

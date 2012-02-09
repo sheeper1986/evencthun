@@ -1,52 +1,64 @@
 package orderBookUpdated52_2;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 
 public class VWAP 
 {
-	private double vwapPrice;
-	private Long vwapTime;
-	private ArrayList<Order> orderList;
+	private double marketVWAP;
+	private double traderVWAP;
+	private Long timeStamp;
 	
 	public VWAP()
 	{
-		this(new ArrayList<Order>());
+
 	}
-	public VWAP(ArrayList<Order> orderList)
+	//public VWAP(ArrayList<Order> orderList)
+	//{
+		//this.orderList = orderList;
+	//}
+	
+	public void setMarketPrice(double marketVWAP)
 	{
-		this.orderList = orderList;
+		this.marketVWAP = marketVWAP;
 	}
 	
-	public void setVwapPrice(double vwapPrice)
+	public void setTraderPrice(double traderVWAP)
 	{
-		this.vwapPrice = vwapPrice;
+		this.traderVWAP = traderVWAP;
 	}
 	
-	public void setVwapTime(Long vwapTime)
+	public void setVWAPTime(Long timeStamp)
 	{
-		this.vwapTime = vwapTime;
+		this.timeStamp = timeStamp;
 	}
 
-	public double getVwapPrice()
+	public double getMarketVWAP()
 	{
-		return vwapPrice;
+		return marketVWAP;
 	}
 	
-	public Long getVwapTime()
+	public double getTraderVWAP()
 	{
-		return vwapTime;
+		return traderVWAP;
 	}
 	
-	public void calculateVWAP(Order order, ArrayList<VWAP> vwapList, double totalPrice, int totalVolume)
+	public Long getTime()
+	{
+		return timeStamp;
+	}
+	
+	public void calculateVWAP(ArrayList<VWAP> vwapList, double marketVWAP, double traderVWAP)
 	{
 		VWAP v = new VWAP();
-		v.setVwapPrice(totalPrice/totalVolume);
-		v.setVwapTime(order.getOpenTime());
+		v.setMarketPrice(marketVWAP);
+		v.setTraderPrice(traderVWAP);
+		v.setVWAPTime(System.currentTimeMillis());
 		vwapList.add(v);
 	}
 	
 	public String toString()
 	{
-		return this.getVwapPrice() + " " + this.getVwapTime();
+		return this.getMarketVWAP() + " " + this.getTraderVWAP() + " " + this.getTime();
 	}
 }

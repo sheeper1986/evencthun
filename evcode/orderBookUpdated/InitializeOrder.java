@@ -94,5 +94,17 @@ public class InitializeOrder
 		order.setOpenTime(System.currentTimeMillis());
 		return order;
 	}
+	
+	public Order createVWAPMarketSell(int totalVolume, String orderID)
+	{
+		Order order = new Order();	
+		order.setOrderID(orderID);
+		order.setSymbol("GOOGLE");
+		order.setSide(SELL);
+		order.setOrderType(MARKET);
+		order.setVolume(totalVolume);
+		order.setOpenTime(System.currentTimeMillis());
+		return order;		
+	}
 }
 
