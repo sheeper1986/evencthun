@@ -47,7 +47,19 @@ public class Test extends Agent
 			//{
 				//try
 				//{
+			
+				//System.out.println(getTickCount());
+			
+				if(getTickCount()!= 18)
+				{
 					System.out.println(i++);
+					
+				}
+				else
+				{
+					System.out.println("last tick");
+				}
+					
 					//Thread.sleep(50);
 				//} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -62,7 +74,7 @@ public class Test extends Agent
 				//stop();
 				tradeTime += 1000*6;
 				System.out.println("Do something");
-				reset();
+				//reset();
 			}
 			//if(getTickCount()==1)
 			//{
@@ -75,6 +87,8 @@ public class Test extends Agent
 				stop();
 			}			
 		}
+		
+			
 	}
 	
 	//private class newTask extends OneShotBehaviour

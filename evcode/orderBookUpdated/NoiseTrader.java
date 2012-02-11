@@ -32,69 +32,24 @@ public class NoiseTrader extends Agent
 	private ArrayList<Order> pendingOrderList = new ArrayList<Order>();
 	private LinkedList<Order> buySideOrders = new LinkedList<Order>();
 	private LinkedList<Order> sellSideOrders = new LinkedList<Order>();
-	private RandomGenerator rg = new RandomGenerator();
 
 	protected void setup()
 	{
 		System.out.println("This is updated52_2 " + getAID().getName());
 			        
-        getContentManager().registerLanguage(MarketAgent.codecI, FIPANames.ContentLanguage.FIPA_SL0);
+        getContentManager().registerLanguage(MarketAgent.codec, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
 
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
-    	LogonMarket.addSubBehaviour(new TradingRequest());
-    	LogonMarket.addSubBehaviour(new TradingPermission());
-    	LogonMarket.addSubBehaviour(new NoisyTradeBehaviour(this,1000));
+    	LogonMarket.addSubBehaviour(new TradingRequest(buySideOrders,sellSideOrders));
+    	LogonMarket.addSubBehaviour(new RequestApproved());
+    	LogonMarket.addSubBehaviour(new NoisyTradeBehaviour(this,2000));
     		
     	addBehaviour(LogonMarket);
     	addBehaviour(new LocalOrderManager());
 	 }
 	
-	private class TradingRequest extends OneShotBehaviour
-	{
-		public void action() 
-		{
-			buySideOrders.addAll(MarketAgent.buySideQueue);
-    		Collections.sort(buySideOrders);
-    		sellSideOrders.addAll(MarketAgent.sellSideQueue);
-    		Collections.sort(sellSideOrders);
-    		
-    		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideOrders.size());
-    		System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideOrders.size());
-    		
-			ACLMessage tradingRequestMsg = new ACLMessage(ACLMessage.REQUEST);
-			tradingRequestMsg.setConversationId("TradingRequest");
-			tradingRequestMsg.setContent("ReadyToStart");
-			tradingRequestMsg.addReceiver(MarketAgent.marketAID);
-			myAgent.send(tradingRequestMsg);				
-		}	
-	}
-	
-	private class TradingPermission extends Behaviour
-	{
-		int i = 0;
-		public void action() 
-		{
-			MessageTemplate mt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.AGREE),
-					MessageTemplate.MatchConversationId("TradingPermission")); 
-            ACLMessage tradingRequestMsg = receive(mt);
-            
-            if(tradingRequestMsg != null)
-            {
-    			System.out.println(getAID().getLocalName() + " Start Trading...... ");
-    			i++;
-            }
-		}
 
-		public boolean done() {
-			if(i < 1)
-			{
-				return false;
-			}
-			else
-				return true;
-		}
-	}
 	
 	private class NoisyTradeBehaviour extends TickerBehaviour
 	{	
@@ -107,21 +62,17 @@ public class NoiseTrader extends Agent
 		{
 			try
 			{
-				int randomTime = (int)(1000 + Math.random()*1000);
+				int randomTime = (int)(500 + Math.random()*1500);
 				
 				if(buySideOrders.size() > 0 && sellSideOrders.size() > 0)
 				{
 					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
-					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), orderID);
+					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), 40, 50, orderID);
 					
 					Action action = new Action(MarketAgent.marketAID, newOrder);
-					ACLMessage orderRequestMsg = new ACLMessage(ACLMessage.CFP);
-					orderRequestMsg.addReceiver(MarketAgent.marketAID);
-					orderRequestMsg.setOntology(MarketAgent.ontology.getName());
-					orderRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+					ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
 					myAgent.getContentManager().fillContent(orderRequestMsg, action);
-					myAgent.send(orderRequestMsg);
-					
+					myAgent.send(orderRequestMsg);					
 					pendingOrderList.add(newOrder);
 					//System.out.println("Pending orders " + pendingOrderList);
 					
@@ -132,10 +83,7 @@ public class NoiseTrader extends Agent
 						while(i < cancelList.size())
 						{
 							Action actionI = new Action(MarketAgent.marketAID, cancelList.get(i));
-							ACLMessage cancelRequestMsg = new ACLMessage(ACLMessage.CANCEL);
-							cancelRequestMsg.addReceiver(MarketAgent.marketAID);
-							cancelRequestMsg.setOntology(MarketAgent.ontology.getName());
-							cancelRequestMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							ACLMessage cancelRequestMsg = new Messages(ACLMessage.CANCEL, MarketAgent.marketAID).createMessage();
 							myAgent.getContentManager().fillContent(cancelRequestMsg, actionI);
 							myAgent.send(cancelRequestMsg);	
 							//System.out.println(getLocalName() + " Cancel " + cancelList.get(i));
@@ -181,8 +129,8 @@ public class NoiseTrader extends Agent
 					    	//System.out.println("Updated Pending List " + pendingOrderList);
 				    	}
 				    }
-				    	System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders.size());
-				    	System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideOrders.size());
+				    	//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders.size());
+				    	//System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideOrders.size());
 				}	
 				catch(CodecException ce){
 					ce.printStackTrace();

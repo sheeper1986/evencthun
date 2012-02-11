@@ -46,28 +46,28 @@ public class InitializeOrder
 		}
 	}
 	
-	public Order initNoiseOrder(double bestBidPrice, double BestAskPrice, String orderID)
+	public Order initNoiseOrder(double bestBidPrice, double bestAskPrice, int PercentOfMarket, int PercentOfBuy, String orderID)
 	{
 		Order order = new Order();	
 		order.setOrderID(orderID);
 		order.setSymbol("GOOGLE");		
-		order.setOrderType(rg.randomType(40));	
+		order.setOrderType(rg.randomType(PercentOfMarket));	
 		
 		if(order.isMarketOrder())
 		{
-			order.setSide(rg.randomSide(50));
+			order.setSide(rg.randomSide(PercentOfBuy));
 		}
 		else//is limit
 		{
-			order.setSide(rg.randomSide(50));
+			order.setSide(rg.randomSide(PercentOfBuy));
 			
 			if(order.isBuySide())
 			{
-				order.setPrice(rg.randomBidPrice(bestBidPrice));
+				order.setPrice(rg.randomBidPrice(bestAskPrice));
 			}
 			else//SellSide
 			{
-				order.setPrice(rg.randomAskPrice(BestAskPrice));
+				order.setPrice(rg.randomAskPrice(bestBidPrice));
 			}	
 		}
 		order.setVolume(rg.randomVolume(1, 200));
@@ -76,7 +76,7 @@ public class InitializeOrder
 		return order;
 	}
 	
-	public Order createVWAPSellOrder(int totalVolume, long frequency, long timeLeft, String orderID, double VWAP)
+	public Order createVWAPSellOrder(int totalVolume, long frequency, long timeLeft, String orderID, double VWAP, int PercentOfMarket, double percentage)
 	{
 		int vwapVolume = new VWAPVolume().getPendingVolume(totalVolume, frequency, timeLeft);
 		
@@ -84,10 +84,10 @@ public class InitializeOrder
 		order.setOrderID(orderID);
 		order.setSymbol("GOOGLE");
 		order.setSide(SELL);
-		order.setOrderType(rg.randomType(40));
+		order.setOrderType(rg.randomType(PercentOfMarket));
 		if(order.isLimitOrder())
 		{
-			double myPrice =  new BigDecimal(VWAP*1.002).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+			double myPrice =  new BigDecimal(VWAP*percentage).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
 			order.setPrice(myPrice);
 		}
 		order.setVolume(vwapVolume);

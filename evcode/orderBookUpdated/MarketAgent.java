@@ -16,6 +16,7 @@ import jade.core.AID;
 import jade.core.Agent;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.core.behaviours.OneShotBehaviour;
+import jade.core.behaviours.WakerBehaviour;
 import jade.domain.DFService;
 import jade.domain.FIPAException;
 import jade.domain.FIPANames;
@@ -29,18 +30,18 @@ public class MarketAgent extends Agent
 {
 	public static final AID marketAID = new AID("MarketAgent", AID.ISLOCALNAME);
 	public static final Ontology ontology = OrderBookOntology.getInstance();
-	public static final Codec codecI = new SLCodec();
+	public static final Codec codec = new SLCodec();
 	public static PriorityQueue<Order> buySideQueue = new PriorityQueue<Order>();
 	public static PriorityQueue<Order> sellSideQueue = new PriorityQueue<Order>();
 	protected ArrayList investorList = new ArrayList();  
 	protected int investorCount = 0;
-	//private ArrayList<Order> loggerList = new ArrayList<Order>();
+	private ArrayList<Order> executedOrders = new ArrayList<Order>();
 	
 	protected void setup()
 	{
 		System.out.println("This is updated52_2 " + getAID().getName());
 
-		getContentManager().registerLanguage(codecI, FIPANames.ContentLanguage.FIPA_SL0);
+		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 			
 		new InitializeOrder().initOrderbook(buySideQueue, sellSideQueue, 1000);
@@ -50,6 +51,7 @@ public class MarketAgent extends Agent
 			
 		addBehaviour(new InitOrderbookResponder());
 		addBehaviour(new OrderMatchEngine());
+		addBehaviour(new ExecutedOrdersReport(this, 1000*361, executedOrders));
 		
 		this.startInvestors();
 	}
@@ -128,14 +130,17 @@ public class MarketAgent extends Agent
 							
 							tempBuyOrders.addAll(matchEngine.matchBuyOrders());
 							
-							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue.size());
-							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue.size());
+							//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue.size());
+							//System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue.size());
 							
 							int i = 0;
 							while(i < tempBuyOrders.size())
 							{
-								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
-								//loggerList.add(tempBuyOrders.get(i));
+								//currentPrice = tempBuyOrder.get(i).getDealingPrice();
+								//if(tempBuyOrders.get(i).isLimitOrder())
+								//{
+									executedOrders.add(tempBuyOrders.get(i));
+								//}
 								//ExecutionReport report = new ExecutionReport();
 								//report.createHistoryOrderLogger(loggerList);
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
@@ -173,13 +178,17 @@ public class MarketAgent extends Agent
 							
 							tempSellOrders.addAll(matchEngine.matchSellOrders());
 							
-							System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue.size());
-							System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue.size());
+							//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue.size());
+							//System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideQueue.size());
 							
 							int i = 0;
 							while(i < tempSellOrders.size())
 							{
 								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
+								//if(tempSellOrders.get(i).isLimitOrder())
+								//{
+									executedOrders.add(tempSellOrders.get(i));
+								//}
 								//loggerList.add(tempSellOrders.get(i));
 								//ExecutionReport report = new ExecutionReport();
 								//report.createHistoryOrderLogger(loggerList);
@@ -249,8 +258,8 @@ public class MarketAgent extends Agent
 		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_2.NoiseTraderII", null);
 		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_2.VWAPTrader", null);
 		    investorContraller.start();
-		    //investorContrallerI.start();
-		    //investorContrallerII.start();
+		    investorContrallerI.start();
+		    investorContrallerII.start();
 		    investorContrallerIV.start();
   
 		    investorList.add(new AID(noiseTrader, AID.ISLOCALNAME));

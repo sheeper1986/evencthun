@@ -200,7 +200,21 @@ public class ManageOrders
 		int i = 0;
 		while(i < aimList.size())
 		{
-			if(aimList.get(i).isNewOrder())
+			if(aimList.get(i).isNewOrder()&&aimList.get(i).isLimitOrder())
+			{
+				orderList.add(aimList.get(i));
+			}
+			i++;
+		}
+		return orderList;
+	}
+	
+	public ArrayList<Order> recyclingAllOrders(ArrayList<Order> aimList)
+	{
+		int i = 0;
+		while(i < aimList.size())
+		{
+			if(aimList.get(i).isPartiallyFilled()&&aimList.get(i).isLimitOrder())
 			{
 				orderList.add(aimList.get(i));
 			}

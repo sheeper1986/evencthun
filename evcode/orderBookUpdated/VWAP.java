@@ -13,10 +13,6 @@ public class VWAP
 	{
 
 	}
-	//public VWAP(ArrayList<Order> orderList)
-	//{
-		//this.orderList = orderList;
-	//}
 	
 	public void setMarketPrice(double marketVWAP)
 	{
@@ -46,19 +42,5 @@ public class VWAP
 	public Long getTime()
 	{
 		return timeStamp;
-	}
-	
-	public void calculateVWAP(ArrayList<VWAP> vwapList, double marketVWAP, double traderVWAP)
-	{
-		VWAP v = new VWAP();
-		v.setMarketPrice(marketVWAP);
-		v.setTraderPrice(traderVWAP);
-		v.setVWAPTime(System.currentTimeMillis());
-		vwapList.add(v);
-	}
-	
-	public String toString()
-	{
-		return this.getMarketVWAP() + " " + this.getTraderVWAP() + " " + this.getTime();
 	}
 }
