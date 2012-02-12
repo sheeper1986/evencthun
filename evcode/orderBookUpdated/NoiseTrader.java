@@ -67,7 +67,7 @@ public class NoiseTrader extends Agent
 				if(buySideOrders.size() > 0 && sellSideOrders.size() > 0)
 				{
 					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
-					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), 40, 50, orderID);
+					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), 50, 50, orderID);
 					
 					Action action = new Action(MarketAgent.marketAID, newOrder);
 					ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();

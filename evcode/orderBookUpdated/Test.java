@@ -29,6 +29,7 @@ public class Test extends Agent
 	private class TimeStop extends TickerBehaviour
 	{
 		Long tradeTime = startTime;
+		int step = 0;
 		
 		public TimeStop(Agent a, long period) {
 			super(a, period);
@@ -45,21 +46,56 @@ public class Test extends Agent
 			//orderList
 			//for(int j = 0; j < 20; j++)
 			//{
+			int count = getTickCount();
 				//try
 				//{
-			
 				//System.out.println(getTickCount());
 			
-				if(getTickCount()!= 18)
+				//if(count!=18)
+		        if(count%6 !=0)
 				{
-					System.out.println(i++);
-					
+					//System.out.println(i++);
+					switch(step)
+					{
+					case 0:
+						System.out.println("0");
+						break;
+					case 1:
+						System.out.println("1");
+						break;
+					case 2:
+						System.out.println("2");
+						break;	
+					}
 				}
 				else
 				{
 					System.out.println("last tick");
+					//step++;					
 				}
-					
+				/*if(System.currentTimeMillis() >= tradeTime + 1000*6)//&& System.currentTimeMillis()<startTime + 1000*18)
+				{
+					//stop();
+					tradeTime += 1000*6;
+					System.out.println("Do something");
+					//System.out.println(getTickCount());
+					//if(count==17)
+					//{
+					step++;
+					//}
+					//step++;
+					//reset();
+				}*/
+				/*if(tradeTime>=startTime + 1000*18)
+				{
+					System.out.println("Well, current time is " + shortFormat.format(System.currentTimeMillis()));
+					stop();
+				}*/
+				if(System.currentTimeMillis() >= startTime + 1000*18)
+				{
+					System.out.println("Well, current time is " + shortFormat.format(System.currentTimeMillis()));
+					stop();
+				}				
 					//Thread.sleep(50);
 				//} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
@@ -69,23 +105,12 @@ public class Test extends Agent
 
 		    //reset(100);
 			
-			if(System.currentTimeMillis() >= tradeTime + 1000*6)
-			{
-				//stop();
-				tradeTime += 1000*6;
-				System.out.println("Do something");
-				//reset();
-			}
+			
 			//if(getTickCount()==1)
 			//{
 				
 			//}
 
-			if(System.currentTimeMillis() >= startTime + 1000*18)
-			{
-				System.out.println("Well, current time is " + shortFormat.format(System.currentTimeMillis()));
-				stop();
-			}			
 		}
 		
 			

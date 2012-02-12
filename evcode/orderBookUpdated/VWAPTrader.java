@@ -33,6 +33,8 @@ public class VWAPTrader extends Agent
 	private int traderVolume = 0;
 	private double marketVWAP = 0;
 	private double traderVWAP = 0;
+	final int STATE_1 = 1;
+	final int STATE_2 = 2;
 	private final long START_TIME = System.currentTimeMillis();
 	private final long FINAL_TIME = 1000*60*6;
 	private long passedTime = 0;
@@ -50,84 +52,113 @@ public class VWAPTrader extends Agent
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
     	LogonMarket.addSubBehaviour(new TradingRequest(buySideOrdersIV,sellSideOrdersIV));
     	LogonMarket.addSubBehaviour(new RequestApproved());
-    	LogonMarket.addSubBehaviour(new VWAPTradeBehaviourI(this,TRADE_FREQUENCY));
-    	LogonMarket.addSubBehaviour(new VWAPTradeBehaviourII());	
+    	LogonMarket.addSubBehaviour(new VWAPTradeBehaviourI(this,TRADE_FREQUENCY));	
     	
     	addBehaviour(LogonMarket);
     	addBehaviour(new LocalOrderbook());
-    	addBehaviour(new VWAPCounter(this, 1000));
+    	addBehaviour(new VWAPCounter(this, TIME_SLOT));
 	 }
 	
 	
 	private class VWAPTradeBehaviourI extends TickerBehaviour
 	{
 		long tradingTime = START_TIME;
-		public VWAPTradeBehaviourI(Agent a, long period) 
+		int step = 0;
+		
+		public VWAPTradeBehaviourI(Agent a, long period)
 		{
 			super(a, period);
 		}
 
 		protected void onTick() 
 		{
+			int count = getTickCount();
 			try
 			{
-				if(marketVWAP !=0 )
+				if(System.currentTimeMillis() < START_TIME + FINAL_TIME)
 				{
-					if(getTickCount() != FINAL_TIME/TRADE_FREQUENCY)
+					if(marketVWAP !=0 )
 					{
-						Order order = new InitializeOrder().createVWAPSellOrder(stockVolume, TRADE_FREQUENCY, FINAL_TIME - passedTime, 
-								getLocalName() + String.valueOf(id++), marketVWAP, 25, 1.002);
-							
-						Action action = new Action(MarketAgent.marketAID, order);
-						ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
-						myAgent.getContentManager().fillContent(orderRequestMsg, action);
-						myAgent.send(orderRequestMsg);	
-						pendingOrderListIV.add(order);
-						System.out.println("Pending orders VWAP " + pendingOrderListIV);
+						if(stockVolume==0)
+						{
+							System.out.println("----------VWAP Alogrithm completed----------");
+							new Logger().createVWAPLog(vwapList);
+							stop();
+						}	
+						if(getTickCount()%(TIME_SLOT/TRADE_FREQUENCY) != 0)
+						{
+							switch(step)
+							{
+							case 0:
+								Order order = new InitializeOrder().createVWAPSellOrder(stockVolume, TRADE_FREQUENCY, FINAL_TIME - passedTime, 
+										getLocalName() + String.valueOf(id++), marketVWAP, 25, 1.002);
+										
+								Action action = new Action(MarketAgent.marketAID, order);
+								ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
+								myAgent.getContentManager().fillContent(orderRequestMsg, action);
+								myAgent.send(orderRequestMsg);	
+								pendingOrderListIV.add(order);
+								System.out.println("Pending orders VWAP " + pendingOrderListIV);
+								break;
+						     	case 1:
+									break;
+								case 2:
+									break;
+							}	
+						}
+						else
+						{
+							//last tick of each slot
+							System.out.println("----------recycling orders----------");//check
+						    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,1);
+						    if(cancelList.size() > 0)
+						    {
+							   	int i = 0;
+							   	Action action = null;
+							   	while(i < cancelList.size())
+							   	{
+							   		action = new Action(MarketAgent.marketAID, cancelList.get(i));
+							    	ACLMessage cancelRequestMsg = new Messages(ACLMessage.CANCEL, MarketAgent.marketAID).createMessage();
+								    myAgent.getContentManager().fillContent(cancelRequestMsg, action);
+								    myAgent.send(cancelRequestMsg);	
+								    System.out.println(getLocalName() + " To Cancel " + cancelList.get(i));
+								    i++;
+								}
+						    }
+						    System.out.println("----------recycling orders complete----------");
+							passedTime += TIME_SLOT;
+						}			
 					}
 				}
-				
-				if(System.currentTimeMillis() >= tradingTime + TIME_SLOT)
+				else//time up
 				{
 					System.out.println("----------recycling orders----------");//check
-				    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV);
+				    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,2);
 				    if(cancelList.size() > 0)
 				    {
-				    	int i = 0;
-				    	while(i < cancelList.size())
-				    	{
-				    		Action action = new Action(MarketAgent.marketAID, cancelList.get(i));
-				    		ACLMessage cancelRequestMsg = new Messages(ACLMessage.CANCEL, MarketAgent.marketAID).createMessage();
-						    myAgent.getContentManager().fillContent(cancelRequestMsg, action);
-						    myAgent.send(cancelRequestMsg);	
-						    System.out.println(getLocalName() + " Cancel " + cancelList.get(i));
-						    i++;
-						}
-				    }
-				    tradingTime += TIME_SLOT;
-				    passedTime += TIME_SLOT;
-				 }
-				if(System.currentTimeMillis() >= START_TIME + FINAL_TIME)
-				{
-					ArrayList<Order> recyclingList = new ManageOrders().recyclingAllOrders(pendingOrderListIV);
-					if(recyclingList.size() > 0)
-					{
-						int i = 0;
-					    while(i < recyclingList.size())
+					   	int i = 0;
+					   	Action action = null;
+					   	while(i < cancelList.size())
 					   	{
-					   		Action action = new Action(MarketAgent.marketAID, recyclingList.get(i));
-					   		ACLMessage cancelRequestMsg = new Messages(ACLMessage.CANCEL, MarketAgent.marketAID).createMessage();
+					   		action = new Action(MarketAgent.marketAID, cancelList.get(i));
+					    	ACLMessage cancelRequestMsg = new Messages(ACLMessage.CANCEL, MarketAgent.marketAID).createMessage();
 						    myAgent.getContentManager().fillContent(cancelRequestMsg, action);
 						    myAgent.send(cancelRequestMsg);	
-						    System.out.println(getLocalName() + " CancelAll " + recyclingList.get(i));
+						    System.out.println(getLocalName() + " To Cancel " + cancelList.get(i));
 						    i++;
 						}
 				    }
-					stop();
-				}
-				if(stockVolume == 0)
-				{
+				    System.out.println("----------recycling orders complete----------");
+				    
+					Order order = new InitializeOrder().createVWAPMarketSell(stockVolume, getLocalName()+String.valueOf(id++));
+					Action action = new Action(MarketAgent.marketAID, order);
+					ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
+					myAgent.getContentManager().fillContent(orderRequestMsg, action);
+					myAgent.send(orderRequestMsg);	
+					pendingOrderListIV.add(order);
+					
 					System.out.println("----------VWAP Alogrithm completed----------");
+					new Logger().createVWAPLog(vwapList);
 					stop();
 				}
 			}
@@ -140,34 +171,6 @@ public class VWAPTrader extends Agent
 			}
 		}
 	}
-	
-	private class VWAPTradeBehaviourII extends OneShotBehaviour
-	{
-		public void action()
-		{
-			try
-			{
-				if(stockVolume != 0)
-				{
-					Order order = new InitializeOrder().createVWAPMarketSell(stockVolume, getLocalName()+String.valueOf(id++));
-					Action action = new Action(MarketAgent.marketAID, order);
-					ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
-					myAgent.getContentManager().fillContent(orderRequestMsg, action);
-					myAgent.send(orderRequestMsg);	
-					pendingOrderListIV.add(order);
-					new Logger().createVWAPLog(vwapList);
-					System.out.println("----------VWAP Alogrithm completed----------");
-				}
-			} catch (CodecException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (OntologyException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}	
-		}
-	}
-	
 	
 	private class LocalOrderbook extends CyclicBehaviour
 	{

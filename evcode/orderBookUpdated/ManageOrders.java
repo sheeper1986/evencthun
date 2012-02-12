@@ -195,30 +195,31 @@ public class ManageOrders
 		
 	}
 	
-	public ArrayList<Order> recyclingOrders(ArrayList<Order> aimList)
+	public ArrayList<Order> recyclingOrders(ArrayList<Order> aimList, int stage)
 	{
-		int i = 0;
-		while(i < aimList.size())
+		if(stage == 1)
 		{
-			if(aimList.get(i).isNewOrder()&&aimList.get(i).isLimitOrder())
+			int i = 0;
+			while(i < aimList.size())
 			{
-				orderList.add(aimList.get(i));
+				if(aimList.get(i).isNewOrder()&&aimList.get(i).isLimitOrder())
+				{
+					orderList.add(aimList.get(i));
+				}
+				i++;
 			}
-			i++;
 		}
-		return orderList;
-	}
-	
-	public ArrayList<Order> recyclingAllOrders(ArrayList<Order> aimList)
-	{
-		int i = 0;
-		while(i < aimList.size())
+		else
 		{
-			if(aimList.get(i).isPartiallyFilled()&&aimList.get(i).isLimitOrder())
+			int i = 0;
+			while(i < aimList.size())
 			{
-				orderList.add(aimList.get(i));
+				if((aimList.get(i).isPartiallyFilled()||aimList.get(i).isNewOrder())&&aimList.get(i).isLimitOrder())
+				{
+					orderList.add(aimList.get(i));
+				}
+				i++;
 			}
-			i++;
 		}
 		return orderList;
 	}
