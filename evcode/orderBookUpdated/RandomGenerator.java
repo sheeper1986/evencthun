@@ -57,27 +57,27 @@ public class RandomGenerator
         
         if(num <= 5)
         {
-        	bidPrice =  new Format().priceFormat(aimedBidPrice*0.985);
+        	bidPrice =  new Format().priceFormat(aimedBidPrice*0.98);
         }
         else if(num > 5 && num <= 15)
         {
-        	bidPrice =  new Format().priceFormat(aimedBidPrice*0.9875);
+        	bidPrice =  new Format().priceFormat(aimedBidPrice*0.985);
         }
         else if(num > 15 && num <= 25)
         {
-        	bidPrice = new Format().priceFormat(aimedBidPrice*0.99);
+        	bidPrice = new Format().priceFormat(aimedBidPrice*0.9875);
         }
         else if(num > 25 && num <= 45)
         {
-        	bidPrice = new Format().priceFormat(aimedBidPrice*0.9925);
+        	bidPrice = new Format().priceFormat(aimedBidPrice*0.99);
         }
         else if(num > 45 && num <= 70)
         {
-        	bidPrice =  new Format().priceFormat(aimedBidPrice*0.995);
+        	bidPrice =  new Format().priceFormat(aimedBidPrice*0.9925);
         }
         else
         {
-        	bidPrice = new Format().priceFormat(aimedBidPrice*0.9975);
+        	bidPrice = new Format().priceFormat(aimedBidPrice*0.995);
         }
         return bidPrice;
 	}
@@ -89,27 +89,27 @@ public class RandomGenerator
         
         if(num <= 5)
         {
-        	askPrice = new Format().priceFormat(aimedAskPrice*1.015);
+        	askPrice = new Format().priceFormat(aimedAskPrice*1.02);
         }
         else if(num > 5 && num <= 15)
         {
-        	askPrice =  new Format().priceFormat(aimedAskPrice*1.0125);
+        	askPrice =  new Format().priceFormat(aimedAskPrice*1.015);
         }
         else if(num > 15 && num <= 25)
         {
-        	askPrice =  new Format().priceFormat(aimedAskPrice*1.01);
+        	askPrice =  new Format().priceFormat(aimedAskPrice*1.0125);
         }
         else if(num > 25 && num <= 45)
         {
-        	askPrice =  new Format().priceFormat(aimedAskPrice*1.0075);
+        	askPrice =  new Format().priceFormat(aimedAskPrice*1.01);
         }
         else if(num > 45 && num <= 70)
         {
-        	askPrice =  new Format().priceFormat(aimedAskPrice*1.005);
+        	askPrice =  new Format().priceFormat(aimedAskPrice*1.0075);
         }
         else
         {
-        	askPrice = new Format().priceFormat(aimedAskPrice*1.0025);
+        	askPrice = new Format().priceFormat(aimedAskPrice*1.005);
         }
         return askPrice;
 	}
