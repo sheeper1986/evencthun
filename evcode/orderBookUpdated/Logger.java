@@ -1,5 +1,5 @@
 
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -31,7 +31,7 @@ public class Logger
                
                 out.write(orderID+ "," + symbol +", "+OrderSide.getSide(order).toString()+", " +OrderType.getOrderType(order).toString() 
                 		+", "+Double.toString(dealingPrice)+", "+Integer.toString(ProcessedVolume)+", "+ OrderStatus.getOrderStatus(order).toString()
-                		+  "," + DateFormat.getTimeInstance(DateFormat.MEDIUM).format(openTime));
+                		+  "," + new Format().timeFormat(openTime));
                 out.newLine();
             }
             out.close();
@@ -51,7 +51,7 @@ public class Logger
                 double traderVWAP = vwap.getTraderVWAP();
                 Long vwapTime = vwap.getTime();
                
-                out.write(Double.toString(marketVWAP) + " , " + Double.toString(traderVWAP) + " , " + DateFormat.getTimeInstance(DateFormat.MEDIUM).format(vwapTime));
+                out.write(Double.toString(marketVWAP) + " , " + Double.toString(traderVWAP) + " , " + new Format().timeFormat(vwapTime));
                 out.newLine();
             }
             out.close();

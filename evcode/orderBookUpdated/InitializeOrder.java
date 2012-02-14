@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -87,7 +87,7 @@ public class InitializeOrder
 		order.setOrderType(rg.randomType(PercentOfMarket));
 		if(order.isLimitOrder())
 		{
-			double myPrice =  new BigDecimal(VWAP*percentage).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+			double myPrice =  new Format().priceFormat(VWAP*percentage);
 			order.setPrice(myPrice);
 		}
 		order.setVolume(vwapVolume);

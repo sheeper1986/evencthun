@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import java.util.*;
 
@@ -33,60 +33,26 @@ public class MarketAgent extends Agent
 	public static final Codec codec = new SLCodec();
 	public static PriorityQueue<Order> buySideQueue = new PriorityQueue<Order>();
 	public static PriorityQueue<Order> sellSideQueue = new PriorityQueue<Order>();
-	protected ArrayList investorList = new ArrayList();  
-	protected int investorCount = 0;
+	protected ArrayList<AID> investorList = new ArrayList<AID>();  
 	private ArrayList<Order> executedOrders = new ArrayList<Order>();
 	
 	protected void setup()
 	{
-		System.out.println("This is updated52_2 " + getAID().getName());
+		System.out.println("This is updated52_5 " + getAID().getName());
 
 		getContentManager().registerLanguage(codec, FIPANames.ContentLanguage.FIPA_SL0);
 		getContentManager().registerOntology(ontology);
 			
 		new InitializeOrder().initOrderbook(buySideQueue, sellSideQueue, 1000);
 			
-		System.out.println(getAID().getLocalName() + " LocalBuyOrders: " + buySideQueue.size());
-		System.out.println(getAID().getLocalName() + " LocalSellOrders: " + sellSideQueue.size());
+		System.out.println(getLocalName() + " LocalBuyOrders: " + buySideQueue.size());
+		System.out.println(getLocalName() + " LocalSellOrders: " + sellSideQueue.size());
 			
-		addBehaviour(new InitOrderbookResponder());
+		addBehaviour(new InitOrderbookResponder(investorList));
 		addBehaviour(new OrderMatchEngine());
 		addBehaviour(new ExecutedOrdersReport(this, 1000*361, executedOrders));
 		
 		this.startInvestors();
-	}
-	
-	private class InitOrderbookResponder extends CyclicBehaviour
-	{		
-		public void action()
-		{
-			MessageTemplate pt = MessageTemplate.and(MessageTemplate.MatchPerformative(ACLMessage.REQUEST), 
-					MessageTemplate.MatchConversationId("TradingRequest"));
-			ACLMessage tradingRequestMsg = receive(pt);
-
-			if(tradingRequestMsg != null)
-			{
-	            if (tradingRequestMsg.getContent().equals("ReadyToStart"))
-	            {
-	                investorCount++;
-	                System.out.println( "Investors (" + investorCount + " have arrived)" );
-
-	                if (investorCount == 4) 
-	                {
-	                    System.out.println( "All investors are ready, now start......" );
-	                    for (Iterator it = investorList.iterator();  it.hasNext();) 
-						{
-	                    	ACLMessage replyTradingRequest = new ACLMessage(ACLMessage.AGREE);
-	                        replyTradingRequest.setConversationId("TradingPermission");
-	                        replyTradingRequest.addReceiver((AID) it.next());
-							myAgent.send(replyTradingRequest);
-						}							
-	                }
-	            }
-			}
-			else
-				block();
-		}
 	}
 	
 	private class OrderMatchEngine extends CyclicBehaviour
@@ -116,11 +82,12 @@ public class MarketAgent extends Agent
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{   
 									Action action = new Action(orderRequestMsg.getSender(), placedOrder);
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									ACLMessage replyOrderMsg = new Messages(ACLMessage.INFORM,(AID) it.next()).createMessage();
+									//ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									//replyOrderMsg.setOntology(ontology.getName());
+									//replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									replyOrderMsg.addReceiver((AID) it.next());
+									//replyOrderMsg.addReceiver((AID) it.next());
 									myAgent.send(replyOrderMsg);
 								}							
 							}
@@ -136,21 +103,17 @@ public class MarketAgent extends Agent
 							int i = 0;
 							while(i < tempBuyOrders.size())
 							{
-								//currentPrice = tempBuyOrder.get(i).getDealingPrice();
-								//if(tempBuyOrders.get(i).isLimitOrder())
-								//{
-									executedOrders.add(tempBuyOrders.get(i));
-								//}
-								//ExecutionReport report = new ExecutionReport();
-								//report.createHistoryOrderLogger(loggerList);
+								executedOrders.add(tempBuyOrders.get(i));
+								
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempBuyOrders.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									ACLMessage replyOrderMsg = new Messages(ACLMessage.INFORM,(AID) it.next()).createMessage();
+									//ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									//replyOrderMsg.setOntology(ontology.getName());
+									//replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									replyOrderMsg.addReceiver((AID) it.next());
+									//replyOrderMsg.addReceiver((AID) it.next());
 									myAgent.send(replyOrderMsg);
 								}							
 								i++;
@@ -164,11 +127,12 @@ public class MarketAgent extends Agent
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{   
 									Action action = new Action(orderRequestMsg.getSender(), placedOrder);
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									ACLMessage replyOrderMsg = new Messages(ACLMessage.INFORM,(AID) it.next()).createMessage();
+									//ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									//replyOrderMsg.setOntology(ontology.getName());
+									//replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									replyOrderMsg.addReceiver((AID) it.next());
+									//replyOrderMsg.addReceiver((AID) it.next());
 									myAgent.send(replyOrderMsg);
 								}							
 							}
@@ -184,22 +148,17 @@ public class MarketAgent extends Agent
 							int i = 0;
 							while(i < tempSellOrders.size())
 							{
-								//currentPrice = tempBuyOrder.get(i).getDealingPrice();	
-								//if(tempSellOrders.get(i).isLimitOrder())
-								//{
-									executedOrders.add(tempSellOrders.get(i));
-								//}
-								//loggerList.add(tempSellOrders.get(i));
-								//ExecutionReport report = new ExecutionReport();
-								//report.createHistoryOrderLogger(loggerList);
+								executedOrders.add(tempSellOrders.get(i));
+								
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempSellOrders.get(i));
-									ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
-									replyOrderMsg.setOntology(ontology.getName());
-									replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+									//ACLMessage replyOrderMsg = new ACLMessage(ACLMessage.INFORM);
+									ACLMessage replyOrderMsg = new Messages(ACLMessage.INFORM,(AID) it.next()).createMessage();
+									//replyOrderMsg.setOntology(ontology.getName());
+									//replyOrderMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 									myAgent.getContentManager().fillContent(replyOrderMsg, action);
-									replyOrderMsg.addReceiver((AID) it.next());
+									//replyOrderMsg.addReceiver((AID) it.next());
 									myAgent.send(replyOrderMsg);
 								}							
 								i++;
@@ -209,23 +168,17 @@ public class MarketAgent extends Agent
 					else if(orderRequestMsg.getPerformative() == ACLMessage.CANCEL)
 					{
 						placedOrder.setStatus(4);
-						
-						if(placedOrder.getSide() == 1)
-				        {
-							new ManageOrders(placedOrder).cancelFrom(buySideQueue);
-				        }
-						else
-						{
-							new ManageOrders(placedOrder).cancelFrom(sellSideQueue);
-						}
+						new ManageOrders(placedOrder).cancelFrom(buySideQueue, sellSideQueue);
+				        
 						for (Iterator it = investorList.iterator();  it.hasNext();) 
 						{
 							Action action = new Action(orderRequestMsg.getSender(),placedOrder);
-							ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.INFORM);
-							replyCancelMsg.setOntology(ontology.getName());
-							replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
+							//ACLMessage replyCancelMsg = new ACLMessage(ACLMessage.INFORM);
+							ACLMessage replyCancelMsg = new Messages(ACLMessage.INFORM,(AID) it.next()).createMessage();
+							//replyCancelMsg.setOntology(ontology.getName());
+							//replyCancelMsg.setLanguage(FIPANames.ContentLanguage.FIPA_SL0);
 							myAgent.getContentManager().fillContent(replyCancelMsg, action);
-							replyCancelMsg.addReceiver((AID) it.next());
+							//replyCancelMsg.addReceiver((AID) it.next());
 							myAgent.send(replyCancelMsg);
 						}
 						//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideQueue);
@@ -253,10 +206,10 @@ public class MarketAgent extends Agent
     		String noiseTraderI = "Peter";
     		String noiseTraderII = "Mike";
     		String vwapTrader = "VWAPTrader";
-		    AgentController investorContraller = container.createNewAgent(noiseTrader, "orderBookUpdated52_2.NoiseTrader", null);
-		    AgentController investorContrallerI = container.createNewAgent(noiseTraderI, "orderBookUpdated52_2.NoiseTraderI", null);
-		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_2.NoiseTraderII", null);
-		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_2.VWAPTrader", null);
+		    AgentController investorContraller = container.createNewAgent(noiseTrader, "orderBookUpdated52_5.NoiseTrader", null);
+		    AgentController investorContrallerI = container.createNewAgent(noiseTraderI, "orderBookUpdated52_5.NoiseTraderI", null);
+		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_5.NoiseTraderII", null);
+		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_5.VWAPTrader", null);
 		    investorContraller.start();
 		    investorContrallerI.start();
 		    investorContrallerII.start();

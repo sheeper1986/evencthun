@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +14,6 @@ public class ManageOrders
 	
 	public ManageOrders()
 	{
-		this(new Order());
 		this.orderList = new ArrayList<Order>();
 	}
 	
@@ -71,7 +70,7 @@ public class ManageOrders
 				}
 			}
 		}
-		else if(order.getStatus() == 3 || order.getStatus() == 4)
+		else if(order.isRejected()||order.isCanceled())
 		{
 			ListIterator<Order> it = aimedList.listIterator();				
 			while(it.hasNext())
@@ -81,7 +80,22 @@ public class ManageOrders
 					it.remove();
 				}
 			}
-		}		
+		}	
+		/*else if(order.isCanceled())
+		{
+			int i = 0;
+			while(i < aimedList.size())
+			{
+				if(aimedList.get(i).getOrderID().equals(order.getOrderID()))
+				{
+					if(aimedList.get(i).isNewOrder())
+					{
+						aimedList.remove(i);
+					}
+				}
+				i++;
+			}
+		}*/
 	}
 	
 	public void updateLocalOrderbook(LinkedList<Order> buySideOrders, LinkedList<Order> sellSideOrders)
@@ -224,15 +238,28 @@ public class ManageOrders
 		return orderList;
 	}
 	
-	public void cancelFrom(PriorityQueue<Order> aimedQueue)
+	public void cancelFrom(PriorityQueue<Order> aimedBuyQueue, PriorityQueue<Order> aimedSellQueue)
 	{
-		Iterator<Order> it = aimedQueue.iterator();
-		
-		while(it.hasNext())
+		if(order.isBuySide())
 		{
-			if(it.next().getOrderID().equals(order.getOrderID()))
+			Iterator<Order> it = aimedBuyQueue.iterator();		
+			while(it.hasNext())
 			{
-				it.remove();
+				if(it.next().getOrderID().equals(order.getOrderID()))
+				{
+					it.remove();
+				}
+			}
+		}
+		else
+		{
+			Iterator<Order> it = aimedSellQueue.iterator();		
+			while(it.hasNext())
+			{
+				if(it.next().getOrderID().equals(order.getOrderID()))
+				{
+					it.remove();
+				}
 			}
 		}
 	}

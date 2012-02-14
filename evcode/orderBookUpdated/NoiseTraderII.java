@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -35,7 +35,7 @@ public class NoiseTraderII extends Agent
 
 	protected void setup()
 	{
-		System.out.println("This is updated52_2 " + getAID().getName());
+		System.out.println("This is updated52_5 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codec, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -65,7 +65,7 @@ public class NoiseTraderII extends Agent
 				if(buySideOrdersII.size() > 0 && sellSideOrdersII.size() > 0)
 				{
 					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
-					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrdersII.get(0).getPrice(), sellSideOrdersII.get(0).getPrice(), 50, 50, orderID);
+					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrdersII.get(0).getPrice(), sellSideOrdersII.get(0).getPrice(), 40, 50, orderID);
 					
 					Action action = new Action(MarketAgent.marketAID, newOrder);
 					ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
@@ -125,7 +125,7 @@ public class NoiseTraderII extends Agent
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
 				    	{
 				    		new ManageOrders(orderInfomation).updatePendingOrderList(pendingOrderListII);
-					    	//System.out.println("Updated Pending ListII " + pendingOrderListII);
+				    		//System.out.println(myAgent.getLocalName() + " Updated Pending List " + pendingOrderListII);
 				    	}
 				    }
 				    	//System.out.println(getAID().getLocalName() + " BuyOrdersII: " + buySideOrdersII.size());

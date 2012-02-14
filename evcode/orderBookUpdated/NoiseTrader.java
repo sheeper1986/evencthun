@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec;
@@ -35,7 +35,7 @@ public class NoiseTrader extends Agent
 
 	protected void setup()
 	{
-		System.out.println("This is updated52_2 " + getAID().getName());
+		System.out.println("This is updated52_5 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codec, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -43,7 +43,7 @@ public class NoiseTrader extends Agent
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
     	LogonMarket.addSubBehaviour(new TradingRequest(buySideOrders,sellSideOrders));
     	LogonMarket.addSubBehaviour(new RequestApproved());
-    	LogonMarket.addSubBehaviour(new NoisyTradeBehaviour(this,2000));
+    	LogonMarket.addSubBehaviour(new NoiseTraderBehaviour(this,2000));
     		
     	addBehaviour(LogonMarket);
     	addBehaviour(new LocalOrderManager());
@@ -51,9 +51,9 @@ public class NoiseTrader extends Agent
 	
 
 	
-	private class NoisyTradeBehaviour extends TickerBehaviour
+	private class NoiseTraderBehaviour extends TickerBehaviour
 	{	
-		public NoisyTradeBehaviour(Agent a, long period) 
+		public NoiseTraderBehaviour(Agent a, long period) 
 		{
 			super(a, period);
 		}
@@ -67,7 +67,7 @@ public class NoiseTrader extends Agent
 				if(buySideOrders.size() > 0 && sellSideOrders.size() > 0)
 				{
 					String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
-					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), 50, 50, orderID);
+					Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), 40, 50, orderID);
 					
 					Action action = new Action(MarketAgent.marketAID, newOrder);
 					ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
@@ -126,7 +126,7 @@ public class NoiseTrader extends Agent
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
 				    	{
 				    		new ManageOrders(orderInfomation).updatePendingOrderList(pendingOrderList);
-					    	//System.out.println("Updated Pending List " + pendingOrderList);
+					    	//System.out.println(myAgent.getLocalName() + " Updated Pending List " + pendingOrderList);
 				    	}
 				    }
 				    	//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders.size());

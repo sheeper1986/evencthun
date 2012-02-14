@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import jade.content.ContentElement;
 import jade.content.lang.Codec.CodecException;
@@ -33,18 +33,19 @@ public class VWAPTrader extends Agent
 	private int traderVolume = 0;
 	private double marketVWAP = 0;
 	private double traderVWAP = 0;
-	final int STATE_1 = 1;
-	final int STATE_2 = 2;
+	final int LAST_TICK = 1;
+	final int TIME_UP = 2;
 	private final long START_TIME = System.currentTimeMillis();
 	private final long FINAL_TIME = 1000*60*6;
 	private long passedTime = 0;
-	private final long TIME_SLOT = 1000*36;
+	private final int NUMBER_OF_SLOTS = 10;
+	private final long TIME_SLOT = FINAL_TIME/NUMBER_OF_SLOTS;
 	private final long TRADE_FREQUENCY = 1000*6;
 	private int stockVolume = 10000;
 
 	protected void setup()
 	{
-		System.out.println("This is updated52_1 " + getAID().getName());
+		System.out.println("This is updated52_5 " + getAID().getName());
 			        
         getContentManager().registerLanguage(MarketAgent.codec, FIPANames.ContentLanguage.FIPA_SL0);
         getContentManager().registerOntology(MarketAgent.ontology);
@@ -52,20 +53,20 @@ public class VWAPTrader extends Agent
     	SequentialBehaviour LogonMarket = new SequentialBehaviour();
     	LogonMarket.addSubBehaviour(new TradingRequest(buySideOrdersIV,sellSideOrdersIV));
     	LogonMarket.addSubBehaviour(new RequestApproved());
-    	LogonMarket.addSubBehaviour(new VWAPTradeBehaviourI(this,TRADE_FREQUENCY));	
+    	LogonMarket.addSubBehaviour(new VWAPTradeBehaviour(this,TRADE_FREQUENCY));	
     	
     	addBehaviour(LogonMarket);
-    	addBehaviour(new LocalOrderbook());
+    	addBehaviour(new VWAPLocalManager());
     	addBehaviour(new VWAPCounter(this, TIME_SLOT));
 	 }
 	
 	
-	private class VWAPTradeBehaviourI extends TickerBehaviour
+	private class VWAPTradeBehaviour extends TickerBehaviour
 	{
 		long tradingTime = START_TIME;
 		int step = 0;
 		
-		public VWAPTradeBehaviourI(Agent a, long period)
+		public VWAPTradeBehaviour(Agent a, long period)
 		{
 			super(a, period);
 		}
@@ -79,13 +80,13 @@ public class VWAPTrader extends Agent
 				{
 					if(marketVWAP !=0 )
 					{
-						if(stockVolume==0)
+						if(stockVolume == 0)
 						{
 							System.out.println("----------VWAP Alogrithm completed----------");
 							new Logger().createVWAPLog(vwapList);
 							stop();
 						}	
-						if(getTickCount()%(TIME_SLOT/TRADE_FREQUENCY) != 0)
+						if(count%(TIME_SLOT/TRADE_FREQUENCY) != 0)
 						{
 							switch(step)
 							{
@@ -110,7 +111,7 @@ public class VWAPTrader extends Agent
 						{
 							//last tick of each slot
 							System.out.println("----------recycling orders----------");//check
-						    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,1);
+						    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,LAST_TICK);
 						    if(cancelList.size() > 0)
 						    {
 							   	int i = 0;
@@ -133,7 +134,7 @@ public class VWAPTrader extends Agent
 				else//time up
 				{
 					System.out.println("----------recycling orders----------");//check
-				    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,2);
+				    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,TIME_UP);
 				    if(cancelList.size() > 0)
 				    {
 					   	int i = 0;
@@ -172,7 +173,7 @@ public class VWAPTrader extends Agent
 		}
 	}
 	
-	private class LocalOrderbook extends CyclicBehaviour
+	private class VWAPLocalManager extends CyclicBehaviour
 	{
 		public void action()
 		{
@@ -200,7 +201,7 @@ public class VWAPTrader extends Agent
 				    	{
 				    		totalPrice += orderInfomation.getProcessedVolume()*orderInfomation.getDealingPrice();
 					    	totalVolume += orderInfomation.getProcessedVolume();
-					    	marketVWAP = new BigDecimal(totalPrice/totalVolume).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+					    	marketVWAP = new Format().priceFormat(totalPrice/totalVolume);
 				    	}
 				    	//My order
 				    	if(orderInfomation.getOrderID().contains(getLocalName()))
@@ -212,14 +213,14 @@ public class VWAPTrader extends Agent
 				    			//to calculate trader's VWAP
 				    			traderPrice += orderInfomation.getProcessedVolume()*orderInfomation.getDealingPrice();
 						    	traderVolume += orderInfomation.getProcessedVolume();
-						    	traderVWAP = new BigDecimal(traderPrice/traderVolume).setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
+						    	traderVWAP = new Format().priceFormat(traderPrice/traderVolume);
 				    		}
-					    	System.out.println("Updated Pending List VWAP " + pendingOrderListIV);
+					    	System.out.println(myAgent.getLocalName() + " Updated Pending List" + pendingOrderListIV);
 					    	System.out.println("Volume left: " + stockVolume);
 				    	}
 				    }
-				    	//System.out.println(getAID().getLocalName() + " BuyOrdersIV: " + buySideOrdersIV.size());
-				    	//System.out.println(getAID().getLocalName() + " SellOrdersIV: " + sellSideOrdersIV.size());
+				    	//System.out.println(myAgent.getLocalName() + " BuyOrders: " + buySideOrdersIV.size());
+				    	//System.out.println(myAgent.getLocalName() + " SellOrders: " + sellSideOrdersIV.size());
 				}	
 				catch(CodecException ce){
 					ce.printStackTrace();

@@ -1,4 +1,4 @@
-package orderBookUpdated52_2;
+package orderBookUpdated52_5;
 
 import jade.core.behaviours.OneShotBehaviour;
 import jade.lang.acl.ACLMessage;
@@ -11,10 +11,6 @@ public class TradingRequest extends OneShotBehaviour
 	LinkedList<Order> buySideOrders;
 	LinkedList<Order> sellSideOrders;
 	
-	public TradingRequest()
-	{
-		this(new LinkedList<Order>(), new LinkedList<Order>());
-	}
 	public TradingRequest(LinkedList<Order> buySideOrders, LinkedList<Order> sellSideOrders)
 	{
 		this.buySideOrders = buySideOrders;
