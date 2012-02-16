@@ -49,9 +49,10 @@ public class Logger
             	
                 double marketVWAP = vwap.getMarketVWAP();
                 double traderVWAP = vwap.getTraderVWAP();
+                double error = vwap.getError();
                 Long vwapTime = vwap.getTime();
                
-                out.write(Double.toString(marketVWAP) + " , " + Double.toString(traderVWAP) + " , " + new Format().timeFormat(vwapTime));
+                out.write(Double.toString(marketVWAP) + " , " + Double.toString(traderVWAP) + " , " + Double.toString(error) + " , " + new Format().timeFormat(vwapTime));
                 out.newLine();
             }
             out.close();

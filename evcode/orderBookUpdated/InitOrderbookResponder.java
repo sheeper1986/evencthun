@@ -14,6 +14,7 @@ public class InitOrderbookResponder extends CyclicBehaviour
 {		
 	private ArrayList<AID> aidList;
 	private int investorCount = 0;
+	
 	public InitOrderbookResponder(ArrayList<AID> aidList)
 	{
 		this.aidList = aidList;

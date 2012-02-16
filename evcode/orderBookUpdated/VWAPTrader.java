@@ -23,9 +23,9 @@ import java.util.LinkedList;
 public class VWAPTrader extends Agent
 {
 	private int id = 0;
-	private ArrayList<Order> pendingOrderListIV = new ArrayList<Order>();
 	private LinkedList<Order> buySideOrdersIV = new LinkedList<Order>();
 	private LinkedList<Order> sellSideOrdersIV = new LinkedList<Order>();
+	private ArrayList<Order> pendingOrderListIV = new ArrayList<Order>();
 	private ArrayList<VWAP> vwapList = new ArrayList<VWAP>();
 	private double totalPrice = 0;
 	private int totalVolume = 0;
@@ -40,8 +40,9 @@ public class VWAPTrader extends Agent
 	private long passedTime = 0;
 	private final int NUMBER_OF_SLOTS = 10;
 	private final long TIME_SLOT = FINAL_TIME/NUMBER_OF_SLOTS;
-	private final long TRADE_FREQUENCY = 1000*6;
+	private final long TRADE_FREQUENCY = 500;
 	private int stockVolume = 10000;
+	private final int INIT_VOLUME = 10000;
 
 	protected void setup()
 	{
@@ -63,7 +64,7 @@ public class VWAPTrader extends Agent
 	
 	private class VWAPTradeBehaviour extends TickerBehaviour
 	{
-		long tradingTime = START_TIME;
+		//long tradingTime = START_TIME;
 		int step = 0;
 		
 		public VWAPTradeBehaviour(Agent a, long period)
@@ -91,6 +92,7 @@ public class VWAPTrader extends Agent
 							switch(step)
 							{
 							case 0:
+							{
 								Order order = new InitializeOrder().createVWAPSellOrder(stockVolume, TRADE_FREQUENCY, FINAL_TIME - passedTime, 
 										getLocalName() + String.valueOf(id++), marketVWAP, 25, 1.002);
 										
@@ -99,12 +101,24 @@ public class VWAPTrader extends Agent
 								myAgent.getContentManager().fillContent(orderRequestMsg, action);
 								myAgent.send(orderRequestMsg);	
 								pendingOrderListIV.add(order);
-								System.out.println("Pending orders VWAP " + pendingOrderListIV);
+								System.out.println("CASE1 Pending orders VWAP " + pendingOrderListIV);
 								break;
-						     	case 1:
-									break;
-								case 2:
-									break;
+							}	
+						    case 1:
+						    {
+						    	Order order = new InitializeOrder().createVWAPSellOrder(stockVolume, TRADE_FREQUENCY, FINAL_TIME - passedTime, 
+										getLocalName() + String.valueOf(id++), marketVWAP, 25, 1.001);
+										
+								Action action = new Action(MarketAgent.marketAID, order);
+								ACLMessage orderRequestMsg = new Messages(ACLMessage.CFP, MarketAgent.marketAID).createMessage();
+								myAgent.getContentManager().fillContent(orderRequestMsg, action);
+								myAgent.send(orderRequestMsg);	
+								pendingOrderListIV.add(order);
+								System.out.println("CASE2 Pending orders VWAP " + pendingOrderListIV);
+								break;
+						    }
+						    case 2:
+								break;
 							}	
 						}
 						else
@@ -128,6 +142,10 @@ public class VWAPTrader extends Agent
 						    }
 						    System.out.println("----------recycling orders complete----------");
 							passedTime += TIME_SLOT;
+							if(passedTime >= FINAL_TIME/2 && stockVolume > INIT_VOLUME/2)
+							{
+								step = 1;
+							}
 						}			
 					}
 				}
@@ -236,9 +254,11 @@ public class VWAPTrader extends Agent
 	
 	private class VWAPCounter extends TickerBehaviour
 	{
-		public VWAPCounter(Agent a, long period) 
+		//private int mode;
+		public VWAPCounter(Agent a, long period)//, int mode) 
 		{
 			super(a, period);
+			//this.mode = mode;
 		}
 
 		@Override
@@ -249,8 +269,16 @@ public class VWAPTrader extends Agent
 			vwap.setTraderPrice(traderVWAP);
 			vwap.setVWAPTime(System.currentTimeMillis());
 			vwapList.add(vwap);
-		}
-		
+			/*if(mode == 2)
+			{
+				totalPrice = 0;
+				totalVolume = 0;
+				traderPrice = 0;
+				traderVolume = 0;
+				marketVWAP = 0;
+				traderVWAP = 0;
+			}*/
+		}		
 	}
-	}
+}
 

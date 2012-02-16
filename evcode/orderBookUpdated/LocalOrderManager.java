@@ -49,7 +49,7 @@ public class LocalOrderManager extends CyclicBehaviour
 			    	if(orderInfomation.getOrderID().contains(myAgent.getLocalName()))
 			    	{
 			    		new ManageOrders(orderInfomation).updatePendingOrderList(pendingOrderList);
-				    	System.out.println(myAgent.getLocalName() + " Updated Pending List " + pendingOrderList);
+				    	//System.out.println(myAgent.getLocalName() + " Updated Pending List " + pendingOrderList);
 			    	}
 			    }
 			    	//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders.size());

@@ -28,7 +28,7 @@ import java.util.*;
 
 public class NoiseTrader extends Agent
 {
-	private int id = 0;
+	//private int id = 0;
 	private ArrayList<Order> pendingOrderList = new ArrayList<Order>();
 	private LinkedList<Order> buySideOrders = new LinkedList<Order>();
 	private LinkedList<Order> sellSideOrders = new LinkedList<Order>();
