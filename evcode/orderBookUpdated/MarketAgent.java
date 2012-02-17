@@ -23,6 +23,7 @@ import jade.domain.FIPANames;
 import jade.domain.FIPAAgentManagement.DFAgentDescription;
 import jade.lang.acl.ACLMessage;
 import jade.lang.acl.MessageTemplate;
+import jade.wrapper.AgentContainer;
 import jade.wrapper.AgentController;
 import jade.wrapper.PlatformController;
 
@@ -35,6 +36,8 @@ public class MarketAgent extends Agent
 	public static PriorityQueue<Order> sellSideQueue = new PriorityQueue<Order>();
 	protected ArrayList<AID> investorList = new ArrayList<AID>();  
 	private ArrayList<Order> executedOrders = new ArrayList<Order>();
+	private int idOfInvestor = 0;
+	public static final int NUMBER_OF_NOISETRADER = 3;
 	
 	protected void setup()
 	{
@@ -103,7 +106,10 @@ public class MarketAgent extends Agent
 							int i = 0;
 							while(i < tempBuyOrders.size())
 							{
-								executedOrders.add(tempBuyOrders.get(i));
+								//if(tempBuyOrders.get(i).isLimitOrder())
+								//{
+									executedOrders.add(tempBuyOrders.get(i));
+								//}
 								
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
@@ -148,8 +154,11 @@ public class MarketAgent extends Agent
 							int i = 0;
 							while(i < tempSellOrders.size())
 							{
-								executedOrders.add(tempSellOrders.get(i));
-								
+								//if(tempSellOrders.get(i).isLimitOrder())
+								//{
+									executedOrders.add(tempSellOrders.get(i));
+								//}
+															
 								for (Iterator it = investorList.iterator();  it.hasNext();) 
 								{
 									Action action = new Action(orderRequestMsg.getSender(), tempSellOrders.get(i));
@@ -168,6 +177,7 @@ public class MarketAgent extends Agent
 					else if(orderRequestMsg.getPerformative() == ACLMessage.CANCEL)
 					{
 						placedOrder.setStatus(4);
+						executedOrders.add(placedOrder);
 						new ManageOrders(placedOrder).cancelFrom(buySideQueue, sellSideQueue);
 				        
 						for (Iterator it = investorList.iterator();  it.hasNext();) 
@@ -199,25 +209,21 @@ public class MarketAgent extends Agent
 	
     protected void startInvestors() 
     {
-    	PlatformController container = getContainerController(); // get a container controller for creating new agents
+    	AgentContainer c = getContainerController();; // get a container controller for creating new agents
+    	
     	try 
     	{
-    		String noiseTrader = "Ev";
-    		String noiseTraderI = "Peter";
-    		String noiseTraderII = "Mike";
     		String vwapTrader = "VWAPTrader";
-		    AgentController investorContraller = container.createNewAgent(noiseTrader, "orderBookUpdated52_5.NoiseTrader", null);
-		    AgentController investorContrallerI = container.createNewAgent(noiseTraderI, "orderBookUpdated52_5.NoiseTraderI", null);
-		    AgentController investorContrallerII = container.createNewAgent(noiseTraderII, "orderBookUpdated52_5.NoiseTraderII", null);
-		    AgentController investorContrallerIV = container.createNewAgent(vwapTrader, "orderBookUpdated52_5.VWAPTrader", null);
-		    investorContraller.start();
-		    investorContrallerI.start();
-		    investorContrallerII.start();
+    		for(int i=0; i<NUMBER_OF_NOISETRADER; i++)
+    		{
+    			String localName = "NoiseTrader" + i;
+    			AgentController investorContraller = c.createNewAgent(localName, "orderBookUpdated52_5.NoiseTrader", null);
+    			investorList.add(new AID(localName, AID.ISLOCALNAME));
+    			investorContraller.start();
+    		}
+		    AgentController investorContrallerIV = c.createNewAgent(vwapTrader, "orderBookUpdated52_5.VWAPTrader", null);
 		    investorContrallerIV.start();
-  
-		    investorList.add(new AID(noiseTrader, AID.ISLOCALNAME));
-		    investorList.add(new AID(noiseTraderI, AID.ISLOCALNAME));
-		    investorList.add(new AID(noiseTraderII, AID.ISLOCALNAME)); 
+
 		    investorList.add(new AID(vwapTrader, AID.ISLOCALNAME));  
         }
         catch (Exception e) {

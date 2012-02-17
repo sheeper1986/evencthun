@@ -31,7 +31,7 @@ public class NoiseTraderBehaviour extends TickerBehaviour
 			
 			if(buySideOrders.size() > 0 && sellSideOrders.size() > 0)
 			{
-				String orderID = myAgent.getAID().getLocalName()+String.valueOf(id++);
+				String orderID = myAgent.getAID().getLocalName() + " " + String.valueOf(id++);
 				Order newOrder = new InitializeOrder().initNoiseOrder(buySideOrders.get(0).getPrice(), sellSideOrders.get(0).getPrice(), 40, 50, orderID);
 				
 				Action action = new Action(MarketAgent.marketAID, newOrder);
@@ -39,7 +39,7 @@ public class NoiseTraderBehaviour extends TickerBehaviour
 				myAgent.getContentManager().fillContent(orderRequestMsg, action);
 				myAgent.send(orderRequestMsg);					
 				pendingOrderList.add(newOrder);
-				//System.out.println("Pending orders " + pendingOrderList);
+				//System.out.println(myAgent.getLocalName() + " Pending orders " + pendingOrderList);
 				
 				ArrayList<Order> cancelList = new ManageOrders().cancelOrders(pendingOrderList, (buySideOrders.get(0).getPrice() + sellSideOrders.get(0).getPrice())/2, 0.6);
 				if(cancelList.size() > 0)
@@ -51,7 +51,7 @@ public class NoiseTraderBehaviour extends TickerBehaviour
 						ACLMessage cancelRequestMsg = new Messages(ACLMessage.CANCEL, MarketAgent.marketAID).createMessage();
 						myAgent.getContentManager().fillContent(cancelRequestMsg, actionI);
 						myAgent.send(cancelRequestMsg);	
-						//System.out.println(getLocalName() + " Cancel " + cancelList.get(i));
+						//System.out.println(myAgent.getLocalName() + " Cancel " + cancelList.get(i));
 						i++;
 					}	
 				}			

@@ -52,8 +52,8 @@ public class LocalOrderManager extends CyclicBehaviour
 				    	//System.out.println(myAgent.getLocalName() + " Updated Pending List " + pendingOrderList);
 			    	}
 			    }
-			    	//System.out.println(getAID().getLocalName() + " BuyOrders: " + buySideOrders.size());
-			    	//System.out.println(getAID().getLocalName() + " SellOrders: " + sellSideOrders.size());
+			    	//System.out.println(myAgent.getLocalName() + " BuyOrders: " + buySideOrders.size());
+			    	//System.out.println(myAgent.getLocalName() + " SellOrders: " + sellSideOrders.size());
 			}	
 			catch(CodecException ce){
 				ce.printStackTrace();

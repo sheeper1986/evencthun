@@ -32,7 +32,7 @@ public class InitOrderbookResponder extends CyclicBehaviour
                 investorCount++;
                 System.out.println( "Investors (" + investorCount + " have arrived)" );
 
-                if (investorCount == 4) 
+                if (investorCount == MarketAgent.NUMBER_OF_NOISETRADER +1) 
                 {
                     System.out.println( "All investors are ready, now start......" );
                     for (Iterator it = aidList.iterator();  it.hasNext();) 

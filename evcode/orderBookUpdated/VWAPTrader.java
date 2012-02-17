@@ -40,7 +40,7 @@ public class VWAPTrader extends Agent
 	private long passedTime = 0;
 	private final int NUMBER_OF_SLOTS = 10;
 	private final long TIME_SLOT = FINAL_TIME/NUMBER_OF_SLOTS;
-	private final long TRADE_FREQUENCY = 500;
+	private final long TRADE_FREQUENCY = 1000*6;
 	private int stockVolume = 10000;
 	private final int INIT_VOLUME = 10000;
 
@@ -101,7 +101,7 @@ public class VWAPTrader extends Agent
 								myAgent.getContentManager().fillContent(orderRequestMsg, action);
 								myAgent.send(orderRequestMsg);	
 								pendingOrderListIV.add(order);
-								System.out.println("CASE1 Pending orders VWAP " + pendingOrderListIV);
+								//System.out.println("CASE1 Pending orders VWAP " + pendingOrderListIV);
 								break;
 							}	
 						    case 1:
@@ -114,7 +114,7 @@ public class VWAPTrader extends Agent
 								myAgent.getContentManager().fillContent(orderRequestMsg, action);
 								myAgent.send(orderRequestMsg);	
 								pendingOrderListIV.add(order);
-								System.out.println("CASE2 Pending orders VWAP " + pendingOrderListIV);
+								//System.out.println("CASE2 Pending orders VWAP " + pendingOrderListIV);
 								break;
 						    }
 						    case 2:
@@ -124,6 +124,7 @@ public class VWAPTrader extends Agent
 						else
 						{
 							//last tick of each slot
+							passedTime += TIME_SLOT;
 							System.out.println("----------recycling orders----------");//check
 						    ArrayList<Order> cancelList = new ManageOrders().recyclingOrders(pendingOrderListIV,LAST_TICK);
 						    if(cancelList.size() > 0)
@@ -141,7 +142,7 @@ public class VWAPTrader extends Agent
 								}
 						    }
 						    System.out.println("----------recycling orders complete----------");
-							passedTime += TIME_SLOT;
+							
 							if(passedTime >= FINAL_TIME/2 && stockVolume > INIT_VOLUME/2)
 							{
 								step = 1;
@@ -233,7 +234,7 @@ public class VWAPTrader extends Agent
 						    	traderVolume += orderInfomation.getProcessedVolume();
 						    	traderVWAP = new Format().priceFormat(traderPrice/traderVolume);
 				    		}
-					    	System.out.println(myAgent.getLocalName() + " Updated Pending List" + pendingOrderListIV);
+					    	//System.out.println(myAgent.getLocalName() + " Updated Pending List" + pendingOrderListIV);
 					    	System.out.println("Volume left: " + stockVolume);
 				    	}
 				    }
